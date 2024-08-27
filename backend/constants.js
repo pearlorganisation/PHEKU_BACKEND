@@ -1,9 +1,12 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 export const DB_NAME = "Pheku_DB";
 
 export const COOKIE_OPTIONS = {
   httpOnly: true,
   sameSite: "strict",
-  secure: process.env.NODE_ENVIRONMENT !== "development",
+  secure: process.env.NODE_ENV !== "development",
 };
 
 export const USER_ROLES_ENUM = {

@@ -1,6 +1,7 @@
 // models/User.js
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { AVAILABLE_USER_ROLES, USER_ROLES_ENUM } from "../../constants.js";
 
 // Define the User schema
@@ -11,7 +12,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    emailAddress: {
+    email: {
       type: String,
       required: true,
       unique: true,
@@ -44,6 +45,37 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+userSchema.methods.isPasswordCorrect = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
+
+//Generate Access Token
+userSchema.methods.generateAccessToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+      email: this.email,
+      name: this.name,
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+    }
+  );
+};
+
+//Generate Refresh Token
+userSchema.methods.generateRefreshToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+    }
+  );
+};
 const User = mongoose.model("User", userSchema);
 
 export default User;
