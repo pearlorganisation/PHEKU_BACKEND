@@ -24,6 +24,9 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    mobileNumber: {
+      type: Number,
+    },
     role: {
       type: String,
       enum: AVAILABLE_USER_ROLES,

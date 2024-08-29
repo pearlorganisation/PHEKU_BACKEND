@@ -4,9 +4,9 @@ import ApiError from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const signup = asyncHandler(async (req, res, next) => {
-  const { fullName, email, password, role } = req.body;
+  const { fullName, email, password, mobileNumber, role } = req.body;
 
-  if (!fullName || !email || !password) {
+  if (!fullName || !email || !password || !mobileNumber) {
     return next(new ApiError("All fields are required", 400));
   }
 
@@ -20,6 +20,7 @@ export const signup = asyncHandler(async (req, res, next) => {
     email,
     password,
     role,
+    mobileNumber,
   });
 
   // Generate access and refresh tokens
