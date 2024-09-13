@@ -1,6 +1,7 @@
 import { COOKIE_OPTIONS } from "../../constants.js";
 import User from "../models/user.js";
 import ApiError from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const signup = asyncHandler(async (req, res, next) => {
@@ -76,5 +77,18 @@ export const login = asyncHandler(async (req, res, next) => {
       expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15day
     })
     .status(200)
-    .json({ success: true, message: "Logged in successfully" });
+    .json(new ApiResponse("Logged in successfully", null, 200));
+});
+
+export const logout = asyncHandler(async (req, res, next) => {
+  await User.findByIdAndUpdate(
+    req.user._id,
+    { $unset: { refreshToken: 1 } },
+    { new: true }
+  );
+  res
+    .cookie("access-token", "", { ...COOKIE_OPTIONS, maxAge: 0 })
+    .cookie("refresh-token", "", { ...COOKIE_OPTIONS, maxAge: 0 })
+    .status(200)
+    .json({ success: true, message: "Logout successfully!" });
 });

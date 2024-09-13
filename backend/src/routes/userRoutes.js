@@ -37,4 +37,5 @@ router
     deleteUserById // Only(super_admin and admin)
   );
 //   .patch(updateUserById);
+
 export default router;
