@@ -8,7 +8,9 @@ cloudinary.config({
 
 const uploadImage = async (filePath) => {
   try {
-    const result = await cloudinary.uploader.upload(filePath); // {} || [{}, {}]
+    const result = await cloudinary.uploader.upload(filePath, {
+      resource_type: "auto",
+    }); // {} || [{}, {}]
     //UNLINK File if necessary when stored local
     return {
       secure_url: result.secure_url,
