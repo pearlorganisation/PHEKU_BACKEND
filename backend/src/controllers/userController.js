@@ -1,5 +1,6 @@
 import User from "../models/user.js";
 import ApiError from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 //Get user details Contoller
@@ -12,7 +13,7 @@ export const getUserDetails = asyncHandler(async (req, res, next) => {
   }
   return res
     .status(200)
-    .json({ success: true, message: "User found successfully", data: user });
+    .json(new ApiResponse("User found successfully", user, 200));
 });
 
 export const getUserById = asyncHandler(async (req, res, next) => {
@@ -24,7 +25,7 @@ export const getUserById = asyncHandler(async (req, res, next) => {
   }
   return res
     .status(200)
-    .json({ success: true, message: "User found successfully", user });
+    .json(new ApiResponse("User found successfully", user, 200));
 });
 
 export const deleteUserById = asyncHandler(async (req, res, next) => {
@@ -34,5 +35,5 @@ export const deleteUserById = asyncHandler(async (req, res, next) => {
   }
   return res
     .status(200)
-    .json({ success: true, message: "User deleted successfully" });
+    .json(new ApiResponse("User deleted successfully", null, 200));
 });
