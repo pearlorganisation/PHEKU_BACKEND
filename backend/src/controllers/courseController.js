@@ -33,11 +33,12 @@ export const getAllCourse =  asyncHandler(async(req,res)=>{
 
 // to get the course by id
 
-export const getCourseById = asyncHandler(async(req,res,next)=>{
+export const getCourseById = asyncHandler(async(req,res)=>{
     const course = await Course.findById(req.params?.id)
     if(!course){
-        return next(new ApiError("Unable to get the course",404))
-    }return res.status(200).json(new ApiResponse("Course Found",course,200))
+        res.status(400);
+        throw new Error("Course not found")
+    }return res.status(200).json(course);
 })
 
 
@@ -45,7 +46,7 @@ export const deleteById= asyncHandler(async(req,res,next)=>{
     const remCourse = await Course.findByIdAndDelete(req.params?.id);
 
     if(!remCourse){
-        return next(new ApiError("Failed to delete the course",404))
+    throw new Error("No Course found")
     } return res
     .status(200)
     .json("Course deleted successfully", null, 200);;
