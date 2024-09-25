@@ -53,7 +53,7 @@ const universitySchema = new mongoose.Schema(
         ref: "Course",
       },
     ],
-    faculty: [facultySchema], // Array of faculty members
+    faculties: [facultySchema], // Array of faculty members
   },
   { timestamps: true }
 );

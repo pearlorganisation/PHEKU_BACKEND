@@ -12,11 +12,13 @@ app.use(morgan("dev"));
 //Routes Imports
 import authRouter from "./src/routes/authRoutes.js";
 import userRouter from "./src/routes/userRoutes.js";
+import universityRouter from "./src/routes/universityRoutes.js";
 import { errorHandler } from "./src/middlewares/errorHandler.js";
 
 //Routes Declaration
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/universities", universityRouter);
 
 app.use(errorHandler);
 
