@@ -1,5 +1,7 @@
-import Course from "../models/course";
-import { asyncHandler } from "../utils/asyncHandler";
+import Course from "../models/course.js";
+import ApiError from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 // to create a course 
 export const createCourse =asyncHandler(async(req,res)=>{
@@ -27,4 +29,24 @@ export const getAllCourse =  asyncHandler(async(req,res)=>{
         throw new Error("No Course Found")
     }
     res.status(200).json(course)
+})
+
+// to get the course by id
+
+export const getCourseById = asyncHandler(async(req,res,next)=>{
+    const course = await Course.findById(req.params?.id)
+    if(!course){
+        return next(new ApiError("Unable to get the course",404))
+    }return res.status(200).json(new ApiResponse("Course Found",course,200))
+})
+
+
+export const deleteById= asyncHandler(async(req,res,next)=>{
+    const remCourse = await Course.findByIdAndDelete(req.params?.id);
+
+    if(!remCourse){
+        return next(new ApiError("Failed to delete the course",404))
+    } return res
+    .status(200)
+    .json("Course deleted successfully", null, 200);;
 })
