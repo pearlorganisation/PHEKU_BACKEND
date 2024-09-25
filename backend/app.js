@@ -14,12 +14,13 @@ import authRouter from "./src/routes/authRoutes.js";
 import userRouter from "./src/routes/userRoutes.js";
 import universityRouter from "./src/routes/universityRoutes.js";
 import { errorHandler } from "./src/middlewares/errorHandler.js";
+import courseRouter from "./src/routes/courseRoutes.js";
 
 //Routes Declaration
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/universities", universityRouter);
-
+app.use("/api/v1/course", courseRouter);
 app.use(errorHandler);
 
 export { app };
