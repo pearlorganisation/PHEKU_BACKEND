@@ -5,7 +5,7 @@ import { upload } from "../middlewares/multerMiddleware.js";
 
 const router = express.Router();
 
-router.route("/signup").post(upload,signup);
+router.route("/signup").post(upload.single("profile"),signup);
 router.route("/login").post(login);
 router.route("/logout").post(authenticateToken, logout);
 
