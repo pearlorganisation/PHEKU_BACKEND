@@ -34,10 +34,11 @@ export const createCourse = asyncHandler(async (req, res,next) => {
       location,
       specialization,
     });
+  const createdCourse = await course.save();
   if(!course){
     return next(new ApiError("Failed to create the course try again",400))
-  } const createdCourse = await course.save();
-    return res.status(201).json(new ApiResponse("Course created successfully",createdCourse,200));
+  } 
+  return res.status(201).json(new ApiResponse("Course created successfully",createdCourse,200));
   });
   
 
