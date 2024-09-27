@@ -24,7 +24,8 @@ export const getAllAccomodation = asyncHandler(async(req,res,next)=>{
   const data = await Accommodation.find();
   if(data.length ===0){
     return next(new ApiError("Unable to get the resources",400))
-  }return res.status(200).json(new ApiResponse("Successfully retrieved the resources",data,200))
+  }return 
+  res.status(200).json(new ApiResponse("Successfully retrieved the resources",data,200))
 })
 
 
@@ -82,8 +83,10 @@ export const updateAccomodationById = asyncHandler(async(req,res,next)=>{
     "owner.name": owner?.name,
     "owner.phone": owner?.phone,
     "owner.email": owner?.email,
-  }
-});
+    },
+   },
+   {new : true}
+);
 
 if(!data){
   return next(new ApiError("Unable to update the data",404))
