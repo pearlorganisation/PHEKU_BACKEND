@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "../../../../voip-backend"
+		},
+		{
+			"path": "../../.."
+		}
+	],
+	"settings": {}
+}
