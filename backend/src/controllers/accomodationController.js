@@ -47,7 +47,7 @@ export const deleteAccomodationById = asyncHandler(async(req,res,next)=>{
   const data = await Accommodation.findByIdAndDelete(accomodationId);
   if(!data){
     return next(new ApiError("Unable to delete the resource",400))
-  }return res.status(200).json(new ApiResponse("Successfully deleted the resource",data,200))
+  }return res.status(200).json(new ApiResponse("Successfully deleted the resource",null,200))
 })
 
 export const updateAccomodationById = asyncHandler(async(req,res,next)=>{
