@@ -5,8 +5,10 @@ import {
 } from "../middlewares/authMiddleware.js";
 import {
   deleteUserById,
+  forgotPassword,
   getUserById,
   getUserDetails,
+  resetPassword,
 } from "../controllers/userController.js";
 import { USER_ROLES_ENUM } from "../../constants.js";
 
@@ -38,4 +40,8 @@ router
   );
 //   .patch(updateUserById);
 
+
+// router to test out email ending for forgotpassword
+router.route("/forgot").post(forgotPassword);
+router.route("/reset/:resetToken").post(resetPassword);
 export default router;
