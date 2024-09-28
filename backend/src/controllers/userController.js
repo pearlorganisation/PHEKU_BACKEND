@@ -12,9 +12,10 @@ import {
 } from 'url';
 
 // Get the __dirname equivalent in ESM
-const __filename = fileURLToPath(
-  import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+
 //Get user details Contoller
 export const getUserDetails = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user?._id).select(
@@ -97,7 +98,7 @@ export const resetPassword = asyncHandler(async(req,res,next)=>{
     }
 
   // Update the user's password
-    user.password = await bcrypt.hash(newPassword, 12); // Hashing //
+    user.password = newPassword; 
     await user.save();  
 
     res.status(200).json(new ApiResponse("Password reset successfull",null, 200));

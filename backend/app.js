@@ -27,6 +27,7 @@ app.use("/api/v1/course", courseRouter);
 app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/accomodation", accomodationRouter);
 app.use("/api/v1/exams",examRouter);
+
 app.use(errorHandler);
 
 export { app };

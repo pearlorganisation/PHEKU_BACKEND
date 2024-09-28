@@ -44,4 +44,5 @@ router
 // router to test out email ending for forgotpassword
 router.route("/forgot").post(forgotPassword);
 router.route("/reset/:resetToken").post(resetPassword);
+
 export default router;
