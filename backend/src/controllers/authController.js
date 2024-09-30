@@ -3,7 +3,7 @@ import User from "../models/user.js";
 import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-
+import bcrypt from 'bcrypt'
 export const signup = asyncHandler(async (req, res, next) => {
   const { fullName, email, password, mobileNumber, role } = req.body;
 
@@ -92,3 +92,22 @@ export const logout = asyncHandler(async (req, res, next) => {
     .status(200)
     .json(new ApiResponse("Logout successfully", null, 200));
 });
+
+/*------------------------------------------------Handler for updating the password after Login----------------------------------------*/
+
+export const updatePassword = asyncHandler(async(req,res,next)=>{
+  const { currentPassword, newPassword } = req.body;
+  const user = await User.findById(req.user._id);
+  
+  if(!user){
+    return next(new ApiError("User is not logged in",400))
+  }else{
+    const isMatch = await user.isPasswordCorrect(currentPassword)
+    if(!isMatch){
+      return next(new ApiError("Entered wrong current password",400))
+    }
+    user.password = newPassword;
+    await user.save()
+    return res.status(200).json(new ApiResponse("Password reset successfull",null,200));
+  }
+})

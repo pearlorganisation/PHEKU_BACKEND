@@ -4,16 +4,8 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { sendMail } from "../utils/nodemailerConfig.js";
 import jwt from "jsonwebtoken"
-import bcrypt from "bcrypt"; 
 import ejs  from 'ejs'
-import path from 'path'
-import {
-  fileURLToPath
-} from 'url';
-
-// Get the __dirname equivalent in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { filePath } from "../utils/ejsFilepathHelper.js";
 
 
 //Get user details Contoller
@@ -58,9 +50,6 @@ export const deleteUserById = asyncHandler(async (req, res, next) => {
 export const forgotPassword = asyncHandler(async(req,res,next)=>{
   const { email } = req.body;
   const user = await User.findOne({ email });
-  const filePath =
-      path.join(__dirname, '../../views/emails/resetPassword.ejs')
-  console.log(filePath)
   if(!user){
     return next(new ApiError("Email is not registered",404))
   }
@@ -69,6 +58,8 @@ export const forgotPassword = asyncHandler(async(req,res,next)=>{
     });
     // Construct reset URL
     const resetLink = `http://your-app-url/reset-password/${resetToken}`;
+
+    // html content that will be sent via email
     const htmlContent = await ejs.renderFile(filePath,{ resetLink }) 
     const data = await sendMail(email,htmlContent);
     if(!data){
