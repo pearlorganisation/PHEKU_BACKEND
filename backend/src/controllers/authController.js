@@ -4,6 +4,9 @@ import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import bcrypt from 'bcrypt'
+// will add validation here
+
+
 export const signup = asyncHandler(async (req, res, next) => {
   const { fullName, email, password, mobileNumber, role } = req.body;
 
@@ -27,7 +30,7 @@ export const signup = asyncHandler(async (req, res, next) => {
   // Generate access and refresh tokens
   const access_token = newUser.generateAccessToken();
   const refresh_token = newUser.generateRefreshToken();
-  newUser.refreshToken = refresh_token;
+  newUser.refreshToken = refresh_token; // save new refresh token
 
   await newUser.save({ validateBeforeSave: false });
 
