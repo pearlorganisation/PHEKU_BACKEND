@@ -2,6 +2,24 @@ import University from "../models/university.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js"
 import ApiError from "../utils/ApiError.js"
+import { z } from "zod";
+// validation for creating university  
+const universitySchema = z.object({
+  name: z.string(),
+  slug: z.string().optional(),  
+  location: z.string(),
+  highlights: z.string().optional(), 
+  overview: z.string().optional(),  
+  contactInfo: z.object({
+      email: z.string().optional(),  
+      website: z.string().optional(), 
+    }).optional(),  
+    ranking: z.object({
+      global: z.number().optional(), 
+      national: z.number().optional(),  
+    }).optional(),
+  courses: z.array(z.string()).optional(),
+});
 export const createUniversity = asyncHandler(async (req, res, next) => {
   const {
     name,
@@ -15,25 +33,35 @@ export const createUniversity = asyncHandler(async (req, res, next) => {
     faculties,
   } = req.body;
 
-  const universityExists = await University.findOne({ name });
+    const parsedData = universitySchema.safeParse(req.body);
 
-  if (universityExists) {
-    return next(new ApiError("University already exists",400));
-  }
-  const university = new University({
-    name,
-    slug,
-    location,
-    highlights,
-    overview,
-    contactInfo,
-    ranking,
-    courses,
-    faculties,
-  });
+    if (!parsedData.success) {
+      return next(new ApiError("Invalid input data", 400, parsedData.error));
+    }
 
-  const createdUniversity = await university.save();
-  res.status(200).json(new ApiResponse("Created the University", createdUniversity,200));
+    const universityExists = await University.findOne({
+      name
+    });
+
+    if (universityExists) {
+      return next(new ApiError("University already exists", 400));
+    }
+
+    const university = new University({
+      name,
+      slug,
+      location,
+      highlights,
+      overview,
+      contactInfo,
+      ranking,
+      courses,
+      faculties,
+    });
+
+    const createdUniversity = await university.save();
+
+    res.status(200).json(new ApiResponse("Created the University", createdUniversity, 200));
 });
 
 export const getAllUniversities = asyncHandler(async (req, res, next) => {
