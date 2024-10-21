@@ -27,7 +27,7 @@ import courseRouter from "./src/routes/courseRoutes.js";
 import jobRouter from "./src/routes/jobRoutes.js";
 import accomodationRouter from "./src/routes/accomodationRoutes.js"
 import examRouter from "./src/routes/examRoutes.js"
-
+import contactRouter from "./src/routes/contactRoutes.js"
 //Routes Declaration
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
@@ -36,6 +36,7 @@ app.use("/api/v1/course", courseRouter);
 app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/accomodation", accomodationRouter);
 app.use("/api/v1/exams",examRouter);
+app.use("/api/v1/contact", contactRouter)
 
 app.use(errorHandler);
 
