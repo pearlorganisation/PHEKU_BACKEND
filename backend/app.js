@@ -10,7 +10,6 @@ const corsOptions = {
   origin: "*",
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // Specify allowed HTTP methods
   allowedHeaders: ["Content-Type", "Authorization"], // Specify allowed headers
-  credentials: true, // Allow cookies to be sent with requests
 };
 
 // Use CORS middleware
