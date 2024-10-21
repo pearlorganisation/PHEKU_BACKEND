@@ -9,13 +9,16 @@ import {
   getUserById,
   getUserDetails,
   resetPassword,
+  updateUserDetails,
 } from "../controllers/userController.js";
 import { USER_ROLES_ENUM } from "../../constants.js";
 
 const router = express.Router();
 
-router.route("/me").get(authenticateToken, getUserDetails);
-//   .patch(updateUserDetails);
+router
+  .route("/me")
+  .get(authenticateToken, getUserDetails)
+  .patch(updateUserDetails);
 
 // Only(super_admin, admin)
 router
@@ -39,7 +42,6 @@ router
     deleteUserById // Only(super_admin and admin)
   );
 //   .patch(updateUserById);
-
 
 // router to test out email ending for forgotpassword
 router.route("/forgot").post(forgotPassword);

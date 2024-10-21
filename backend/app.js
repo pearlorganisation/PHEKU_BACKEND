@@ -1,22 +1,24 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
-import cors from 'cors'
-
-
+import cors from "cors";
 
 const app = express();
-// cors config
-app.use(cors({
-    origin: "http://localhost:5173", 
-    methods: ["GET", "POST", "PUT", "PATCH"], 
-    credentials: true, 
-}));
+
+// CORS configuration
+const corsOptions = {
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // Specify allowed HTTP methods
+  allowedHeaders: ["Content-Type", "Authorization"], // Specify allowed headers
+};
+
+// Use CORS middleware
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan("dev"));
-app.set('view engine', 'ejs');
+app.set("view engine", "ejs");
 
 //Routes Imports
 import authRouter from "./src/routes/authRoutes.js";
@@ -32,11 +34,10 @@ import contactRouter from "./src/routes/contactRoutes.js"
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/universities", universityRouter);
-app.use("/api/v1/course", courseRouter);
-app.use("/api/v1/job", jobRouter);
-app.use("/api/v1/accomodation", accomodationRouter);
-app.use("/api/v1/exams",examRouter);
-app.use("/api/v1/contact", contactRouter)
+app.use("/api/v1/courses", courseRouter);
+app.use("/api/v1/jobs", jobRouter);
+app.use("/api/v1/accomodations", accomodationRouter);
+app.use("/api/v1/exams", examRouter);
 
 app.use(errorHandler);
 

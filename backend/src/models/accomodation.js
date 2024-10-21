@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const accommodationSchema = new mongoose.Schema(
   {
@@ -9,12 +9,19 @@ const accommodationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['dormitory', 'pg'], // Type can be either dormitory or PG
+      enum: ["dormitory", "pg"], // Type can be either dormitory or PG
       required: true,
     },
-    location: {
-      type: String,
-      required: true,
+    locationCoordinates: {
+      type: {
+        type: String,
+        enum: ["Point"], // 'location.type' must be 'Point'
+        required: true,
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: true,
+      },
     },
     capacity: {
       type: Number,
@@ -71,6 +78,8 @@ const accommodationSchema = new mongoose.Schema(
   { timestamps: true } // Automatically manage createdAt and updatedAt fields
 );
 
-const Accommodation = mongoose.model('Accommodation', accommodationSchema);
+// Create a 2dsphere index on the location field
+accommodationSchema.index({ location: "2dsphere" });
+const Accommodation = mongoose.model("Accommodation", accommodationSchema);
 
 export default Accommodation;

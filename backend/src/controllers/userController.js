@@ -21,6 +21,32 @@ export const getUserDetails = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse("User found successfully", user, 200));
 });
 
+export const updateUserDetails = asyncHandler(async (req, res, next) => {
+  const userId = req.user?._id;
+
+  // Fetch the existing user details
+  let user = await User.findById(userId);
+  if (!user) {
+    return next(new ApiError("User not found", 404));
+  }
+  const profilePic = req?.file;
+  let response = [];
+  if (profilePic) {
+    response = await uploadFileToCloudinary(profilePic);
+  }
+  const existingUser = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      ...req.body,
+      profilePic: response[0],
+    },
+    { new: true }
+  ).select("-password -refreshToken");
+  return res
+    .status(200)
+    .json(new ApiResponse("User updated successfully", existingUser, 200));
+});
+
 export const getUserById = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.params?.id).select(
     "-password -refreshToken"
