@@ -7,9 +7,10 @@ const app = express();
 
 // CORS configuration
 const corsOptions = {
-  origin: "*",
+  origin: ["http://localhost:5173", "http://localhost:5174"],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // Specify allowed HTTP methods
   allowedHeaders: ["Content-Type", "Authorization"], // Specify allowed headers
+//   credential: true
 };
 
 // Use CORS middleware
@@ -38,7 +39,7 @@ app.use("/api/v1/courses", courseRouter);
 app.use("/api/v1/jobs", jobRouter);
 app.use("/api/v1/accomodations", accomodationRouter);
 app.use("/api/v1/exams", examRouter);
-
+app.use("/api/v1/contacts", contactRouter)
 app.use(errorHandler);
 
 export { app };
