@@ -12,15 +12,37 @@ const accommodationSchema = new mongoose.Schema(
       enum: ["dormitory", "pg"], // Type can be either dormitory or PG
       required: true,
     },
-    locationCoordinates: {
-      type: {
+    description: {
+      type: String,
+      required: true,
+    },
+    location: {
+      country: {
         type: String,
-        enum: ["Point"], // 'location.type' must be 'Point'
         required: true,
       },
-      coordinates: {
-        type: [Number], // [longitude, latitude]
+      state: {
+        type: String,
         required: true,
+      },
+      district: {
+        type: String,
+        required: true,
+      },
+      city: {
+        type: String,
+        required: true,
+      },
+      locationCoordinates: {
+        type: {
+          type: String,
+          enum: ["Point"], // 'location.type' must be 'Point'
+          required: true,
+        },
+        coordinates: {
+          type: [Number], // [longitude, latitude]
+          required: true,
+        },
       },
     },
     capacity: {
@@ -46,10 +68,6 @@ const accommodationSchema = new mongoose.Schema(
         required: true, // Security deposit amount
       },
     },
-    description: {
-      type: String,
-      required: true, // Brief description of the accommodation
-    },
     contactInfo: {
       phone: {
         type: String,
@@ -60,26 +78,17 @@ const accommodationSchema = new mongoose.Schema(
         required: true, // Email for inquiries
       },
     },
-    owner: {
-      name: {
-        type: String,
-        required: true, // Name of the owner
-      },
-      phone: {
-        type: String,
-        required: true, // Owner's contact number
-      },
-      email: {
-        type: String,
-        required: true, // Owner's email address
-      },
+    ownerName: {
+      type: String,
+      required: true,
     },
   },
   { timestamps: true } // Automatically manage createdAt and updatedAt fields
 );
 
 // Create a 2dsphere index on the location field
-accommodationSchema.index({ location: "2dsphere" });
+accommodationSchema.index({ "location.locationCoordinates": "2dsphere" });
+
 const Accommodation = mongoose.model("Accommodation", accommodationSchema);
 
 export default Accommodation;
