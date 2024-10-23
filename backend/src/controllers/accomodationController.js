@@ -2,9 +2,16 @@ import Accommodation from "../models/accomodation.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { uploadFileToCloudinary } from "../utils/cloudinary.js";
 
 export const createAccomodation = asyncHandler(async (req, res, next) => {
-  const accomodation = await Accommodation.create(req?.body);
+  const images = req.files;
+  console.log("-----------", req.body);
+  const response = await uploadFileToCloudinary(images);
+  const accomodation = await Accommodation.create({
+    ...req?.body,
+    images: response,
+  });
   if (!accomodation) {
     return next(new ApiError("Failed to create the Accomodation", 400));
   }

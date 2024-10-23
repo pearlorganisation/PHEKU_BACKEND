@@ -10,7 +10,7 @@ const corsOptions = {
   origin: ["http://localhost:5173", "http://localhost:5174"],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // Specify allowed HTTP methods
   allowedHeaders: ["Content-Type", "Authorization"], // Specify allowed headers
-//   credential: true
+  credential: true,
 };
 
 // Use CORS middleware
@@ -28,9 +28,9 @@ import universityRouter from "./src/routes/universityRoutes.js";
 import { errorHandler } from "./src/middlewares/errorHandler.js";
 import courseRouter from "./src/routes/courseRoutes.js";
 import jobRouter from "./src/routes/jobRoutes.js";
-import accomodationRouter from "./src/routes/accomodationRoutes.js"
-import examRouter from "./src/routes/examRoutes.js"
-import contactRouter from "./src/routes/contactRoutes.js"
+import accomodationRouter from "./src/routes/accomodationRoutes.js";
+import examRouter from "./src/routes/examRoutes.js";
+import contactRouter from "./src/routes/contactRoutes.js";
 //Routes Declaration
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
@@ -39,7 +39,8 @@ app.use("/api/v1/courses", courseRouter);
 app.use("/api/v1/jobs", jobRouter);
 app.use("/api/v1/accomodations", accomodationRouter);
 app.use("/api/v1/exams", examRouter);
-app.use("/api/v1/contacts", contactRouter)
+app.use("/api/v1/contacts", contactRouter);
+
 app.use(errorHandler);
 
 export { app };
