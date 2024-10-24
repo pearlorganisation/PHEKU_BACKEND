@@ -3,18 +3,9 @@ import User from "../models/user.js";
 import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { z } from 'zod'
 import bcrypt from 'bcrypt'
-// will add validation here
-const signUpValidation = z.object({
-  fullName: z.string().min(1,"Atleast 1 character is required"),
-  email: z.string().email(),
-  password: z.string().min(6,"Minimam 6 character required"),
-  mobileNumber: z.string().min(10, "At least 1 character")
-    .regex(/^\+?[1-9]\d{1,14}$/, {
-      message: "Invalid phone number format"
-    }),
-})
+import { signUpValidation, updateValidation } from "../utils/Validation.js";
+ 
 export const signup = asyncHandler(async (req, res, next) => {
   const {
     fullName,
@@ -134,12 +125,8 @@ export const logout = asyncHandler(async (req, res, next) => {
 });
 
 /*------------------------------------------------Handler for updating the password after Login----------------------------------------*/
-
-/*----------------------------------------------------------- Update password Validation----------------------------------------------- */
-const updateValidation= z.object({
-  newPassword: z.string().min(6,"Atleast 6 characters required")
-})
-
+ 
+ 
 export const updatePassword = asyncHandler(async(req,res,next)=>{
   const { currentPassword, newPassword } = req.body;
   const user = await User.findById(req.user._id);
