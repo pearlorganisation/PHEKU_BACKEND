@@ -16,14 +16,14 @@ const accommodationSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    images: [
+    images: [ //Empty array if not send data
       {
         asset_id: { type: String, required: true },
         secure_url: { type: String, required: true },
         public_id: { type: String, required: true },
       },
     ],
-    location: {
+    location: { // location must be an object containing below field-> required
       country: {
         type: String,
         required: true,
@@ -52,7 +52,7 @@ const accommodationSchema = new mongoose.Schema(
         },
       },
     },
-    capacity: {
+    capacity: { 
       type: Number,
       required: true, // Maximum number of students that can stay
     },
@@ -75,7 +75,7 @@ const accommodationSchema = new mongoose.Schema(
       phone: {
         type: String,
         required: true, // Contact number for inquiries
-      },
+      }, 
       email: {
         type: String,
         required: true, // Email for inquiries
