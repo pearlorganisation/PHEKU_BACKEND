@@ -2,27 +2,27 @@ import mongoose from "mongoose";
 
 const accommodationSchema = new mongoose.Schema(
   {
-    // name: {
-    //   type: String,
-    //   required: true,
-    //   unique: true,
-    // },
-    // type: {
-    //   type: String,
-    //   enum: ["dormitory", "pg"], // Type can be either dormitory or PG
-    //   required: true,
-    // },
-    // description: {
-    //   type: String,
-    //   required: true,
-    // },
-    // images: [
-    //   {
-    //     asset_id: { type: String, required: true },
-    //     secure_url: { type: String, required: true },
-    //     public_id: { type: String, required: true },
-    //   },
-    // ],
+    name: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    type: {
+      type: String,
+      enum: ["dormitory", "pg"], // Type can be either dormitory or PG
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    images: [
+      {
+        asset_id: { type: String, required: true },
+        secure_url: { type: String, required: true },
+        public_id: { type: String, required: true },
+      },
+    ],
     location: {
       country: {
         type: String,
@@ -81,10 +81,10 @@ const accommodationSchema = new mongoose.Schema(
         required: true, // Email for inquiries
       },
     },
-    // ownerName: {
-    //   type: String,
-    //   required: true,
-    // },
+    ownerName: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true } // Automatically manage createdAt and updatedAt fields
 );
