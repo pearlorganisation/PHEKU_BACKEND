@@ -5,7 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import bcrypt from 'bcrypt'
 import { signUpValidation, updateValidation } from "../utils/Validation.js";
- 
+import { z } from "zod";
 export const signup = asyncHandler(async (req, res, next) => {
   const {
     fullName,
