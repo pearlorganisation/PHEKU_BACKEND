@@ -22,9 +22,7 @@ export const updateValidation = z.object({
 export const validContact = z.object({
   name: z.string().min(1, "Atleast 1 chatracter is required"),
   email: z.string().email(),
-  subject: z.string().min(10, "Atleast 10 character are required"),
-  mobile: z.string().length(10, "Enter a valid number").regex(/^\+?[1-9]\d{1,14}$/, {
-      message: "Invalid phone number format"
-  }),
-  message: z.string().length(24,"Enter a valid message")
+  subject: z.string().min(1, "Atleast 10 character are required"),
+  mobile: z.string().length(10, "Enter a valid number"),
+  message: z.string().length(1,"Enter a valid message")
 })
