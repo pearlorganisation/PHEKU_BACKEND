@@ -5,20 +5,33 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadFileToCloudinary } from "../utils/cloudinary.js";
 
 export const createAccomodation = asyncHandler(async (req, res, next) => {
-  const images = req.files;
-  console.log("-----------", req.body);
+  const images = req.files; // Handle file uploads
   const response = await uploadFileToCloudinary(images);
+
+  // Parse JSON fields from req.body if necessary
+  const location = req.body.location ? JSON.parse(req.body.location) : null;
+  const fees = req.body.fees ? JSON.parse(req.body.fees) : null;
+  const contactInfo = req.body.contactInfo
+    ? JSON.parse(req.body.contactInfo)
+    : null;
+
+  // Create accommodation using the parsed data
   const accomodation = await Accommodation.create({
-    ...req?.body,
-    images: response,
+    ...req.body,
+    location,
+    fees,
+    contactInfo,
+    images: response, // Set the uploaded images
   });
+
   if (!accomodation) {
-    return next(new ApiError("Failed to create the Accomodation", 400));
+    return next(new ApiError("Failed to create the Accommodation", 400));
   }
+
   return res
     .status(200)
     .json(
-      new ApiResponse("Created the Accomodation Successfully", accomodation)
+      new ApiResponse("Created the Accommodation Successfully", accomodation)
     );
 });
 

@@ -18,7 +18,7 @@ const router = express.Router();
 router
   .route("/me")
   .get(authenticateToken, getUserDetails)
-  .patch(updateUserDetails);
+  .patch(authenticateToken, updateUserDetails);
 
 // Only(super_admin, admin)
 router
