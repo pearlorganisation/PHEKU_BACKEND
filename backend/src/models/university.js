@@ -18,35 +18,44 @@ const facultySchema = new mongoose.Schema({
 
 const universitySchema = new mongoose.Schema(
   {
-    name: {
+    name: { type: String, required: true, unique: true },
+    slug: { type: String },
+    coverPhotoSrc: { type: String },
+    logoSrc: { type: String },
+    country: { type: String, required: true },
+    // countrySlug: { type: String, required: true },
+    state: {
       type: String,
       required: true,
-      unique: true,
     },
-    slug: {
-      type: String,
-    },
-    location: {
+    district: {
       type: String,
       required: true,
     },
+    city: {
+      type: String,
+      required: true,
+    },
+    address: { type: String, required: true },
     highlights: {
       //Main points
       type: String,
     },
+    estd: { type: String },
     overview: {
       //about university
       type: String,
     },
-    contactInfo: {
-      // phone: String,
-      email: String,
-      website: String,
-    },
+    email: { type: String },
+    phone: { type: String },
     ranking: {
       global: Number,
       national: Number,
     },
+    totalCourse: { type: Number },
+    totalRating: { type: Number },
+    location: { type: String, required: true }, // Embeded link of googel map location
+    website: { type: String, required: true },
     courses: [
       {
         type: mongoose.Schema.Types.ObjectId,
