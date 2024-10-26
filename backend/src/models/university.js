@@ -13,7 +13,10 @@ const facultySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  contactEmail: String,
+  contactEmail: {
+    type: String,
+    required: true,
+  },
 });
 
 const universitySchema = new mongoose.Schema(
