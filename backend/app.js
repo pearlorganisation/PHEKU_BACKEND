@@ -31,6 +31,8 @@ import jobRouter from "./src/routes/jobRoutes.js";
 import accomodationRouter from "./src/routes/accomodationRoutes.js";
 import examRouter from "./src/routes/examRoutes.js";
 import contactRouter from "./src/routes/contactRoutes.js";
+import countryRouter from "./src/routes/country/countryRoutes.js";
+
 //Routes Declaration
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
@@ -40,6 +42,8 @@ app.use("/api/v1/jobs", jobRouter);
 app.use("/api/v1/accomodations", accomodationRouter);
 app.use("/api/v1/exams", examRouter);
 app.use("/api/v1/contacts", contactRouter);
+app.use("/api/v1/countries", countryRouter);
+
 app.use(errorHandler);
 
 export { app };
