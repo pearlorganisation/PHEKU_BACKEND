@@ -32,6 +32,7 @@ import accomodationRouter from "./src/routes/accomodationRoutes.js";
 import examRouter from "./src/routes/examRoutes.js";
 import contactRouter from "./src/routes/contactRoutes.js";
 import countryRouter from "./src/routes/country/countryRoutes.js";
+import blogRouter from "./src/routes/blog/blogRoutes.js";
 
 //Routes Declaration
 app.use("/api/v1/auth", authRouter);
@@ -43,6 +44,7 @@ app.use("/api/v1/accomodations", accomodationRouter);
 app.use("/api/v1/exams", examRouter);
 app.use("/api/v1/contacts", contactRouter);
 app.use("/api/v1/countries", countryRouter);
+app.use("/api/v1/blogs", blogRouter);
 
 app.use(errorHandler);
 
