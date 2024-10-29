@@ -7,7 +7,10 @@ const app = express();
 
 // CORS configuration
 const corsOptions = {
-  origin: ["http://localhost:5173", "http://localhost:5174"],
+  origin:
+    process.env.NODE_ENV === "development"
+      ? ["http://localhost:5173", "http://localhost:5174"]
+      : ["https://pheku-mern.vercel.app"],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // Specify allowed HTTP methods
   allowedHeaders: ["Content-Type", "Authorization"], // Specify allowed headers
   credentials: true,
