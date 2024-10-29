@@ -36,7 +36,7 @@ export const createBlog = asyncHandler(async (req, res, next) => {
 // Get all blog posts
 export const getAllBlogs = asyncHandler(async (req, res, next) => {
   const blogs = await Blog.find()
-    .populate("author", "name email")
+    .populate("author", "fullName email")
     .populate("category", "blogCategoryName")
     .sort({ publishedAt: -1 });
 
