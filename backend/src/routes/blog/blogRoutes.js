@@ -6,12 +6,27 @@ import {
   getBlogCategoryById,
   updateBlogCategoryById,
 } from "../../controllers/blog/blogCategoryController.js";
+import {
+  createBlog,
+  deleteBlogbyId,
+  getAllBlogs,
+  getBlogById,
+  updateBlogById,
+} from "../../controllers/blog/blogController.js";
 
 const router = express.Router();
 
-
 // Define the routes for BLOG
+router
+  .route("/")
+  .post(createBlog) // Create a blog post
+  .get(getAllBlogs); // Get all blog posts
 
+router
+  .route("/:id")
+  .get(getBlogById) // Get a blog post by ID
+  .delete(deleteBlogbyId) // Delete a blog post by ID
+  .put(updateBlogById); // Update a blog post by ID
 
 // Define the routes for BLOG CATEGORY
 router

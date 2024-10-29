@@ -1,6 +1,7 @@
 import BlogCategory from "../../models/blog/blogCategory.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import ApiError from "../../utils/ApiError.js";
+import { ApiResponse } from "../../utils/ApiResponse.js";
 
 // Create a new Blog Category
 export const createBlogCategory = asyncHandler(async (req, res, next) => {
