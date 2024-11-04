@@ -35,16 +35,6 @@ export const createBlog = asyncHandler(async (req, res, next) => {
 });
 
 // Get all blog posts
-// export const getAllBlogs = asyncHandler(async (req, res, next) => {
-//   const blogs = await Blog.find()
-//     .populate("author", "fullName email")
-//     .populate("category", "blogCategoryName")
-//     .sort({ publishedAt: -1 });
-
-//   return res
-//     .status(200)
-//     .json(new ApiResponse("Fetched all blog posts successfully", blogs));
-// });
 export const getAllBlogs = asyncHandler(async (req, res, next) => {
   const page = parseInt(req.query.page || "1");
   const limit = parseInt(req.query.limit || "5");
