@@ -3,6 +3,7 @@ import BlogCategory from "../../models/blog/blogCategory.js";
 import ApiError from "../../utils/ApiError.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
+import { paginate } from "../../utils/pagination.js";
 
 // Create a new blog post
 export const createBlog = asyncHandler(async (req, res, next) => {
@@ -35,14 +36,21 @@ export const createBlog = asyncHandler(async (req, res, next) => {
 
 // Get all blog posts
 export const getAllBlogs = asyncHandler(async (req, res, next) => {
-  const blogs = await Blog.find()
-    .populate("author", "fullName email")
-    .populate("category", "blogCategoryName")
-    .sort({ publishedAt: -1 });
+  const page = parseInt(req.query.page || "1");
+  const limit = parseInt(req.query.limit || "5");
 
+  // Use the pagination utility function
+  const { data: blogs, pagination } = await paginate(Blog, page, limit, [
+    { path: "author", select: "fullName email" },
+    { path: "category", select: "blogCategoryName" },
+  ]);
+
+  // Return paginated response with ApiResponse
   return res
     .status(200)
-    .json(new ApiResponse("Fetched all blog posts successfully", blogs));
+    .json(
+      new ApiResponse("Fetched all blog posts successfully", blogs, pagination)
+    );
 });
 
 // Get a single blog post by ID
@@ -87,4 +95,22 @@ export const deleteBlogbyId = asyncHandler(async (req, res, next) => {
   return res
     .status(200)
     .json(new ApiResponse("Deleted the blog post successfully", deletedBlog));
+});
+
+// Get recent blog posts
+export const getRecentBlogs = asyncHandler(async (req, res, next) => {
+  const { limit = 5 } = req.query; // Default limit to 5 if not provided
+
+  // Fetch recent blogs based on publication date
+  const recentBlogs = await Blog.find()
+    .populate("author", "name email")
+    .populate("category", "blogCategoryName")
+    .sort({ publishedAt: -1 }) // Sort by latest published
+    .limit(Number(limit)); // Limit number of results
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse("Fetched recent blog posts successfully", recentBlogs)
+    );
 });

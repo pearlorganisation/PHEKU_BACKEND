@@ -11,6 +11,7 @@ import {
   deleteBlogbyId,
   getAllBlogs,
   getBlogById,
+  getRecentBlogs,
   updateBlogById,
 } from "../../controllers/blog/blogController.js";
 
