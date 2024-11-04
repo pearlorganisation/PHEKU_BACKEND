@@ -22,7 +22,10 @@ router
   .route("/")
   .post(createBlog) // Create a blog post
   .get(getAllBlogs); // Get all blog posts
-  
+
+// for most recent blogs  
+router.route("/recent").get(getRecentBlogs)
+
 router
   .route("/categories")
   .post(createBlogCategory) // Create a blog category
