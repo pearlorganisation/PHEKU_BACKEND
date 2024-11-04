@@ -11,6 +11,7 @@ import {
   deleteBlogbyId,
   getAllBlogs,
   getBlogById,
+  getRecentBlogs,
   updateBlogById,
 } from "../../controllers/blog/blogController.js";
 
@@ -21,6 +22,8 @@ router
   .route("/")
   .post(createBlog) // Create a blog post
   .get(getAllBlogs); // Get all blog posts
+
+router.route("/recent").get(getRecentBlogs); // By default 5 recent blog will be fetched
 
 router
   .route("/:id")
