@@ -2,50 +2,20 @@ import mongoose from "mongoose";
 
 const courseSchema = new mongoose.Schema(
   {
-    title: {
+    name: { type: String, required: true, unique: true },
+    slug: { type: String, required: true, unique: true },
+    university: { type: mongoose.Schema.Types.ObjectId, ref: "University" },
+    country: { type: mongoose.Schema.Types.ObjectId, ref: "Country" },
+    duration: { type: Number, required: true }, // In months, frontend will show it in year
+    courseLevel: {
       type: String,
-      required: true,
+      enum: ["Undergraduate", "Postgraduate", "Diploma", "PhD"],
     },
-    university: {
+    tutionFees: { amount: Number, currency: String },
+    specialization: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "University",
+      ref: "Specialization",
     },
-    slug: {
-      type: String,
-      required: true,
-    },
-    duration: {
-      minDuration: Number,
-      maxDuration: Number,
-    },
-    courseLevel: [
-      {
-        label: String,
-        slug: String,
-      },
-    ],
-    examType: [
-      {
-        label: String,
-        slug: String,
-      },
-    ],
-    fees: {
-      minAmount: String,
-      maxAmount: String,
-    },
-    location: [
-      {
-        name: String,
-        slug: String,
-      },
-    ],
-    specialization: [
-      {
-        label: String,
-        slug: String,
-      },
-    ],
   },
   { timestamps: true }
 );
