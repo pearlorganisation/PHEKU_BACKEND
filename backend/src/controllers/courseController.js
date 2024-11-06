@@ -60,7 +60,7 @@ export const createCourse = asyncHandler(async (req, res, next) => {
 
 // to get all the course
 export const getAllCourse = asyncHandler(async (req, res, next) => {
-  const course = await Course.find();
+  const course = await Course.find().populate("university");
   if (course.length === 0) {
     return next(new ApiError("No course available", 404));
   }
