@@ -2,15 +2,20 @@ export const paginate = async (
   model,
   page = 1,
   limit = 5,
-  populateOptions = []
+  populateOptions = [],
+  filter = {} // Optional filter parameter
 ) => {
   const skip = (page - 1) * limit;
 
-  // Count total documents in the collection
-  const totalDocuments = await model.countDocuments();
+  // Count total documents based on the filter
+  const totalDocuments = await model.countDocuments(filter);
 
-  // Fetch paginated data with optional population
-  let query = model.find().skip(skip).limit(limit).sort({ publishedAt: -1 });
+  // Fetch paginated data with filtering and optional population
+  let query = model
+    .find(filter)
+    .skip(skip)
+    .limit(limit)
+    .sort({ publishedAt: -1 });
   if (populateOptions.length > 0) {
     populateOptions.forEach((option) => {
       query = query.populate(option);

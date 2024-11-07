@@ -7,23 +7,25 @@ const accommodationSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    type: {
-      type: String,
-      enum: ["dormitory", "pg"], // Type can be either dormitory or PG
-      required: true,
-    },
+    // type: {
+    //   type: String,
+    //   enum: ["dormitory", "pg"], // Type can be either dormitory or PG
+    //   required: true,
+    // },
     description: {
       type: String,
       required: true,
     },
-    images: [ //Empty array if not send data
+    images: [
+      //Empty array if not send data
       {
         asset_id: { type: String, required: true },
         secure_url: { type: String, required: true },
         public_id: { type: String, required: true },
       },
     ],
-    location: { // location must be an object containing below field-> required
+    location: {
+      // location must be an object containing below field-> required
       country: {
         type: String,
         required: true,
@@ -52,7 +54,7 @@ const accommodationSchema = new mongoose.Schema(
         },
       },
     },
-    capacity: { 
+    capacity: {
       type: Number,
       required: true, // Maximum number of students that can stay
     },
@@ -67,7 +69,7 @@ const accommodationSchema = new mongoose.Schema(
         required: true, // Monthly fee for staying
       },
       securityDeposit: {
-        type: Number, 
+        type: Number,
         required: true, // Security deposit amount
       },
     },
@@ -75,7 +77,7 @@ const accommodationSchema = new mongoose.Schema(
       phone: {
         type: String,
         required: true, // Contact number for inquiries
-      }, 
+      },
       email: {
         type: String,
         required: true, // Email for inquiries
