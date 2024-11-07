@@ -38,12 +38,24 @@ export const createBlog = asyncHandler(async (req, res, next) => {
 export const getAllBlogs = asyncHandler(async (req, res, next) => {
   const page = parseInt(req.query.page || "1");
   const limit = parseInt(req.query.limit || "5");
+  const { category } = req.query;
 
+  // Set up filter object for the paginate function
+  const filter = {};
+  if (category) {
+    filter.category = category; // Assuming category is stored as an ID reference in Blog model
+  }
   // Use the pagination utility function
-  const { data: blogs, pagination } = await paginate(Blog, page, limit, [
-    { path: "author", select: "fullName email" },
-    { path: "category", select: "blogCategoryName" },
-  ]);
+  const { data: blogs, pagination } = await paginate(
+    Blog,
+    page,
+    limit,
+    [
+      { path: "author", select: "fullName email" },
+      { path: "category", select: "blogCategoryName" },
+    ],
+    filter
+  );
 
   // Return paginated response with ApiResponse
   return res

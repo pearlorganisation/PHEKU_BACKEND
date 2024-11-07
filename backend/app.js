@@ -37,6 +37,7 @@ import contactRouter from "./src/routes/contactRoutes.js";
 import countryRouter from "./src/routes/country/countryRoutes.js";
 import blogRouter from "./src/routes/blog/blogRoutes.js";
 import specializationRouter from "./src/routes/course/specializationRoutes.js";
+import courseLevelRouter from "./src/routes/course/courseLevelRoutes.js";
 
 //Routes Declaration
 app.use("/api/v1/auth", authRouter);
@@ -49,7 +50,8 @@ app.use("/api/v1/exams", examRouter);
 app.use("/api/v1/contacts", contactRouter);
 app.use("/api/v1/countries", countryRouter);
 app.use("/api/v1/blogs", blogRouter);
-app.use("/api/v1/specializations", specializationRouter); 
+app.use("/api/v1/specializations", specializationRouter);
+app.use("/api/v1/course-levels", courseLevelRouter);
 
 app.use(errorHandler);
 
