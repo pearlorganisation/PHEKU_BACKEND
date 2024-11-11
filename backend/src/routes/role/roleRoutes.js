@@ -7,7 +7,7 @@ import {
   getRoleById,
   getRoles,
   updateRoleById,
-} from "../../controllers/role/roleController";
+} from "../../controllers/role/roleController.js";
 
 const router = express.Router();
 

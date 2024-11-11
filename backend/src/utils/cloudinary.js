@@ -22,12 +22,13 @@ export const uploadFileToCloudinary = async (files) => {
     const uploadResults = await Promise.all(uploadPromises);
 
     // Map and return only the necessary details from the upload results
-    return uploadResults.map((result) => ({
+    return uploadResults.map((result) => ({  // [{}]-> for one file, [{},{}]=> for multiple file
       secure_url: result.secure_url,
       public_id: result.public_id,
-      asset_id: result.asset_id,
     }));
   } catch (error) {
     throw new Error(`File upload failed: ${error.message}`);
   }
 };
+
+export const deleteFileFromCloudinary = async () => {};

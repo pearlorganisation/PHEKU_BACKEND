@@ -6,9 +6,23 @@ import {
   getUniversityById,
   updateUniversityById,
 } from "../controllers/universityController.js";
+import { upload } from "../middlewares/multerMiddleware.js";
 
 const router = express.Router();
 
-router.route("/").post(createUniversity).get(getAllUniversities);
-router.route("/:id").get(getUniversityById).delete(deleteUniversityById).patch(updateUniversityById)
+router
+  .route("/")
+  .post(
+    upload.fields([
+      { name: "coverPhoto", maxCount: 1 },
+      { name: "logo", maxCount: 1 },
+    ]),
+    createUniversity
+  ) // Multer middleware to handle file uploads
+  .get(getAllUniversities);
+router
+  .route("/:id")
+  .get(getUniversityById)
+  .delete(deleteUniversityById)
+  .patch(updateUniversityById);
 export default router;
