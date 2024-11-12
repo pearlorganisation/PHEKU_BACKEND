@@ -79,7 +79,5 @@ export const deleteRoleById = asyncHandler(async (req, res, next) => {
     return next(new ApiError("Role not found", 404));
   }
 
-  return res
-    .status(200)
-    .json(new ApiResponse("Role deleted successfully", role));
+  return res.status(200).json(new ApiResponse("Role deleted successfully"));
 });

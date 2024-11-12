@@ -40,6 +40,11 @@ import specializationRouter from "./src/routes/course/specializationRoutes.js";
 import courseLevelRouter from "./src/routes/course/courseLevelRoutes.js";
 import roleRouter from "./src/routes/role/roleRoutes.js";
 
+app.get("/", (req, res) => {
+  res.status(200).send("APIs are working");
+  console.log("Working..");
+});
+
 //Routes Declaration
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);

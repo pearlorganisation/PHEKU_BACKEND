@@ -8,13 +8,13 @@ const courseSchema = new mongoose.Schema(
     country: { type: mongoose.Schema.Types.ObjectId, ref: "Country" },
     duration: { type: Number, required: true }, // In months, frontend will show it in year
     courseLevel: {
-      type: String,
-      enum: ["Undergraduate", "Postgraduate", "Diploma", "PhD"],
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Specialization",
     },
     tutionFees: { amount: Number, currency: String },
     specialization: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Specialization",
+      ref: "CourseLevel",
     },
   },
   { timestamps: true }
