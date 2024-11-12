@@ -64,13 +64,31 @@ export const createUniversity = asyncHandler(async (req, res, next) => {
     res.status(200).json(new ApiResponse("Created the University", createdUniversity, 200));
 });
 
-export const getAllUniversities = asyncHandler(async (req, res, next) => {
-  const universities = await University.find();
 
-  if (universities.length === 0) {
-    return next(new ApiError("Unable to get the resources",400));
+/* query search parameter to search by country */
+const constructUniversitySearch = (queryParams) => {
+  let constructedQuery = {};
+
+  if (queryParams.country) {
+    // Assuming `queryParams.country` contains the ObjectId string for the country
+    constructedQuery.country = queryParams.country;
   }
-  return res.status(200).json(new ApiResponse("Fetched the resources",universities,200));
+
+  return constructedQuery;
+};
+
+export const getAllUniversities = asyncHandler(async (req, res, next) => {
+  // Construct the query based on request parameters
+  console.log(req.query,"the data")
+  const queryObj = constructUniversitySearch(req.query);
+  // console.log(queryObj);
+
+  const universities = await University.find(queryObj); // Use queryObj to filter results
+  if (universities.length === 0) {
+    return next(new ApiError("Unable to get the resources", 400));
+  }
+
+  return res.status(200).json(new ApiResponse("Fetched the resources", universities, 200));
 });
 
 

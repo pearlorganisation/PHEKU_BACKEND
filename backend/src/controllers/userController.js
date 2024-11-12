@@ -83,7 +83,7 @@ export const forgotPassword = asyncHandler(async(req,res,next)=>{
       expiresIn: '1h'
     });
     // Construct reset URL
-    const resetLink = `http://your-app-url/reset-password/${resetToken}`;
+    const resetLink = `http://localhost:5173/reset/${resetToken}`;
 
     // html content that will be sent via email
     const htmlContent = await ejs.renderFile(filePath,{ resetLink }) 
