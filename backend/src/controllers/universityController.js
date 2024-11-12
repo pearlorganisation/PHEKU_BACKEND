@@ -1,24 +1,27 @@
+import {
+  deleteFileFromCloudinary,
+  uploadFileToCloudinary,
+} from "../configs/cloudinary.js";
 import University from "../models/university.js";
 import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import {
-  deleteFileFromCloudinary,
-  uploadFileToCloudinary,
-} from "../utils/cloudinary.js";
 
 // Create a University
 export const createUniversity = asyncHandler(async (req, res, next) => {
-  const { coverPhoto, logo } = req.files; // Handle file uploads
-  // console.log(req.files);
-  const coverPhotoResponse = coverPhoto
-    ? await uploadFileToCloudinary(coverPhoto[0])
-    : null;
-  const logoResponse = logo ? await uploadFileToCloudinary(logo[0]) : null;
-  console.log(coverPhotoResponse);
-  console.log(logoResponse);
+  const { coverPhoto, logo } = req.files; // Handle file uploads {a: [{}], b: [{}]}
+  let coverPhotoResponse = null;
+  let logoResponse = null;
+  if (coverPhoto && coverPhoto[0]) {
+    coverPhotoResponse = await uploadFileToCloudinary(coverPhoto[0]);
+  }
+  if (logo && logo[0]) {
+    logoResponse = await uploadFileToCloudinary(logo[0]);
+  }
   const universityData = {
     ...req.body,
+    // overview: req.body.overview && JSON.parse(req.body.overview),
+    faculties: req.body.faculties && JSON.parse(req.body.faculties),
     coverPhoto: coverPhotoResponse ? coverPhotoResponse[0] : null,
     logo: logoResponse ? logoResponse[0] : null,
   };
