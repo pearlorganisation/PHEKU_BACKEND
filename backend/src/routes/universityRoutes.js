@@ -20,9 +20,17 @@ router
     createUniversity
   ) // Multer middleware to handle file uploads
   .get(getAllUniversities);
+
 router
   .route("/:id")
   .get(getUniversityById)
   .delete(deleteUniversityById)
-  .patch(updateUniversityById);
+  .patch(
+    upload.fields([
+      { name: "coverPhoto", maxCount: 1 },
+      { name: "logo", maxCount: 1 },
+    ]),
+    updateUniversityById
+  );
+
 export default router;
