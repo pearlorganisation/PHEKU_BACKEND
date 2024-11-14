@@ -10,24 +10,24 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 // Create a University
 export const createUniversity = asyncHandler(async (req, res, next) => {
   const { coverPhoto, logo } = req.files; // Handle file uploads {a: [{}], b: [{}]}
-  console.log(req.body);
+
   let coverPhotoResponse = null;
   let logoResponse = null;
+
   if (coverPhoto && coverPhoto[0]) {
     coverPhotoResponse = await uploadFileToCloudinary(coverPhoto[0]);
   }
   if (logo && logo[0]) {
     logoResponse = await uploadFileToCloudinary(logo[0]);
   }
-  const universityData = {
+
+  const university = await University.create({
     ...req.body,
     faculties: req.body.faculties && JSON.parse(req.body.faculties),
     ranking: req.body.ranking && JSON.parse(req.body.ranking),
     coverPhoto: coverPhotoResponse ? coverPhotoResponse[0] : null,
     logo: logoResponse ? logoResponse[0] : null,
-  };
-
-  const university = await University.create(universityData);
+  });
 
   if (!university) {
     return next(new ApiError("Failed to create the University", 400));
@@ -81,24 +81,24 @@ export const updateUniversityById = asyncHandler(async (req, res, next) => {
 
   // Delete the old cover photo from Cloudinary if it exists and a new one is provided
   if (coverPhoto && coverPhoto[0]) {
+    coverPhotoResponse = await uploadFileToCloudinary(coverPhoto[0]);
     if (existingUniversity.coverPhoto) {
       await deleteFileFromCloudinary(existingUniversity.coverPhoto); // Delete old cover photo
     }
-    coverPhotoResponse = await uploadFileToCloudinary(coverPhoto[0]);
   }
 
   // Delete the old logo from Cloudinary if it exists and a new one is provided
   if (logo && logo[0]) {
+    logoResponse = await uploadFileToCloudinary(logo[0]);
     if (existingUniversity.logo) {
       await deleteFileFromCloudinary(existingUniversity.logo); // Delete old logo
     }
-    logoResponse = await uploadFileToCloudinary(logo[0]);
   }
 
   // Prepare the data for update
   const universityData = {
     ...req.body,
-    faculties: req.body.faculties && JSON.parse(req.body.faculties), 
+    faculties: req.body.faculties && JSON.parse(req.body.faculties),
     ranking: req.body.ranking && JSON.parse(req.body.ranking),
     coverPhoto: coverPhotoResponse ? coverPhotoResponse[0] : undefined, //Only update if new cover photo is provided,mongodb ignore null/undefined
     logo: logoResponse ? logoResponse[0] : undefined, // Only update if new logo is provided
@@ -124,19 +124,17 @@ export const updateUniversityById = asyncHandler(async (req, res, next) => {
 
 // Delete a University
 export const deleteUniversityById = asyncHandler(async (req, res, next) => {
-  const university = await University.findById(req.params.id);
+  const deletedUniversity = await University.findByIdAndDelete(req.params.id);
 
-  if (!university) {
+  if (!deletedUniversity) {
     return next(new ApiError("University not found", 404));
   }
 
   // Delete images from Cloudinary
-  if (university.coverPhoto?.public_id)
-    await deleteFileFromCloudinary(university.coverPhoto.public_id);
-  if (university.logo?.public_id)
-    await deleteFileFromCloudinary(university.logo.public_id);
-
-  await university.remove();
+  if (deletedUniversity?.coverPhoto)
+    await deleteFileFromCloudinary(deletedUniversity.coverPhoto);
+  if (deletedUniversity?.logo)
+    await deleteFileFromCloudinary(deletedUniversity.logo);
 
   return res
     .status(200)

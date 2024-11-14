@@ -1,4 +1,7 @@
-import { uploadFileToCloudinary } from "../../configs/cloudinary.js";
+import {
+  deleteFileFromCloudinary,
+  uploadFileToCloudinary,
+} from "../../configs/cloudinary.js";
 import Blog from "../../models/blog/blog.js";
 import BlogCategory from "../../models/blog/blogCategory.js";
 import ApiError from "../../utils/ApiError.js";
@@ -9,11 +12,9 @@ import { paginate } from "../../utils/pagination.js";
 // Create a new blog post
 export const createBlog = asyncHandler(async (req, res, next) => {
   const thumbImage = req.file;
-  console.log(thumbImage);
   let thumbImageResponse = null;
   if (thumbImage) {
-    thumbImageResponse = await uploadFileToCloudinary(thumbImage);
-    console.log("RES:: ", thumbImageResponse);
+    thumbImageResponse = await uploadFileToCloudinary(thumbImage); // Res-> [{}]
   }
   // Check if category exists
   const categoryExists = await BlogCategory.findById(req.body.category);
@@ -24,7 +25,7 @@ export const createBlog = asyncHandler(async (req, res, next) => {
   // Create a new blog post
   const blog = await Blog.create({
     ...req.body,
-    thumbImage: thumbImageResponse[0],
+    thumbImage: (thumbImageResponse && thumbImageResponse[0]) || null, // If no image null will set, undefined ignored the field
   });
 
   if (!blog) {
@@ -39,7 +40,7 @@ export const createBlog = asyncHandler(async (req, res, next) => {
 // Get all blog posts
 export const getAllBlogs = asyncHandler(async (req, res, next) => {
   const page = parseInt(req.query.page || "1");
-  const limit = parseInt(req.query.limit || "5");
+  const limit = parseInt(req.query.limit || "10");
   const { category } = req.query;
 
   // Set up filter object for the paginate function
@@ -84,15 +85,42 @@ export const getBlogById = asyncHandler(async (req, res, next) => {
 
 // Update a blog post
 export const updateBlogById = asyncHandler(async (req, res, next) => {
-  const updatedBlog = await Blog.findByIdAndUpdate(req.params.id, req.body, {
+  const { id } = req.params; // Get the blog post ID from the request params
+  const thumbImage = req.file; // Handle file upload for thumbImage if it exists
+
+  // Fetch the blog post to check for existing thumbImage
+  const existingBlog = await Blog.findById(id);
+  if (!existingBlog) {
+    return next(new ApiError("Blog post not found", 404));
+  }
+
+  let thumbImageResponse = null;
+
+  // Delete the old thumbImage from Cloudinary if it exists and a new one is provided
+  if (thumbImage) {
+    thumbImageResponse = await uploadFileToCloudinary(thumbImage); // Upload new thumbImage first
+    if (existingBlog.thumbImage) {
+      await deleteFileFromCloudinary(existingBlog.thumbImage); // If upload succeeds, delete the old thumbImage
+    }
+  }
+  // Prepare the data for update
+  const blogData = {
+    ...req.body,
+    thumbImage: thumbImageResponse ? thumbImageResponse[0] : undefined, // can't use null here as it set null in db if not required
+  };
+
+  // Find and update the blog post
+  const updatedBlog = await Blog.findByIdAndUpdate(id, blogData, {
     new: true,
     runValidators: true,
   });
 
+  // Check if update was successful
   if (!updatedBlog) {
-    return next(new ApiError("Blog post not found", 404));
+    return next(new ApiError("Blog post not found or update failed", 404));
   }
 
+  // Send success response
   return res
     .status(200)
     .json(new ApiResponse("Updated the blog post successfully", updatedBlog));
@@ -106,9 +134,13 @@ export const deleteBlogbyId = asyncHandler(async (req, res, next) => {
     return next(new ApiError("Blog post not found", 404));
   }
 
+  // Delete images from Cloudinary
+  if (deletedBlog?.thumbImage)
+    await deleteFileFromCloudinary(deletedBlog.thumbImage);
+
   return res
     .status(200)
-    .json(new ApiResponse("Deleted the blog post successfully", deletedBlog));
+    .json(new ApiResponse("Deleted the blog post successfully"));
 });
 
 // Get recent blog posts

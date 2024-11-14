@@ -39,6 +39,6 @@ router
   .route("/:id")
   .get(getBlogById) // Get a blog post by ID
   .delete(deleteBlogbyId) // Delete a blog post by ID
-  .put(updateBlogById); // Update a blog post by ID
+  .put(upload.single("thumbImage"), updateBlogById); // Update a blog post by ID
 
 export default router;
