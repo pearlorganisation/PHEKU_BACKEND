@@ -20,14 +20,14 @@ const universitySchema = new mongoose.Schema(
     state: { type: String, required: true },
     district: { type: String, required: true },
     city: { type: String, required: true },
-    address: { type: String, required: true }, //Swanston Street, Parkville Melbourne, Victoria, 3010 Australia
+    address: { type: String, required: true }, 
     estdYear: { type: String },
     email: { type: String },
     location: { type: String, required: true }, // Embeded link of googel map location
     website: { type: String, required: true },
     phone: { type: String },
     ranking: { global: Number, national: Number },
-    totalCourse: { type: Number },
+    totalCourse: { type: Number }, // No need to parse these from string to num
     totalRating: { type: Number },
     faculties: [facultySchema], // Array of faculty members
   },

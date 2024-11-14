@@ -17,21 +17,8 @@ import {
 
 const router = express.Router();
 
-// Define the routes for BLOG
-router
-  .route("/")
-  .post(createBlog) // Create a blog post
-  .get(getAllBlogs); // Get all blog posts
-
-// for most recent blogs  
-router.route("/recent").get(getRecentBlogs)
-
-router
-  .route("/categories")
-  .post(createBlogCategory) // Create a blog category
-  .get(getBlogCategories); // Get all blog categories
-
-    // Define the routes for BLOG CATEGORY
+// Define the routes for BLOG CATEGORY
+router.route("/categories").get(getBlogCategories).post(createBlogCategory); // Create a blog category // Get all blog categories
 
 router
   .route("/categories/:id")
@@ -39,11 +26,18 @@ router
   .delete(deleteBlogCategoryById) // Delete a blog category by ID
   .put(updateBlogCategoryById); // Update a blog category by ID
 
+// Define the routes for BLOG
+router
+  .route("/")
+  .post(createBlog) // Create a blog post
+  .get(getAllBlogs); // Get all blog posts
+
+router.route("/recent").get(getRecentBlogs); // By default 5 recent blog will be fetched
 
 router
   .route("/:id")
   .get(getBlogById) // Get a blog post by ID
   .delete(deleteBlogbyId) // Delete a blog post by ID
   .put(updateBlogById); // Update a blog post by ID
- 
+
 export default router;
