@@ -14,6 +14,7 @@ import {
   getRecentBlogs,
   updateBlogById,
 } from "../../controllers/blog/blogController.js";
+import { upload } from "../../middlewares/multerMiddleware.js";
 
 const router = express.Router();
 
@@ -29,7 +30,7 @@ router
 // Define the routes for BLOG
 router
   .route("/")
-  .post(createBlog) // Create a blog post
+  .post(upload.single("thumbImage"), createBlog) // Create a blog post
   .get(getAllBlogs); // Get all blog posts
 
 router.route("/recent").get(getRecentBlogs); // By default 5 recent blog will be fetched
@@ -38,6 +39,6 @@ router
   .route("/:id")
   .get(getBlogById) // Get a blog post by ID
   .delete(deleteBlogbyId) // Delete a blog post by ID
-  .put(updateBlogById); // Update a blog post by ID
+  .put(upload.single("thumbImage"), updateBlogById); // Update a blog post by ID
 
 export default router;

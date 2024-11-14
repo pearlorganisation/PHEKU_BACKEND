@@ -42,7 +42,7 @@ export const paginate = async (
 
   // Build pagination object
   const pagination = {
-    count: totalDocuments,
+    total: totalDocuments,
     current_page: page,
     limit,
     next: page < totalPages ? page + 1 : null,
