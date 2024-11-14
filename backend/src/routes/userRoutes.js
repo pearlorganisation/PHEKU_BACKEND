@@ -4,6 +4,7 @@ import {
   verifyPermission,
 } from "../middlewares/authMiddleware.js";
 import {
+  changePassword,
   deleteUserById,
   forgotPassword,
   getUserById,
@@ -43,7 +44,7 @@ router
   );
 //   .patch(updateUserById);
 
-// router to test out email ending for forgotpassword
+router.route("/change-password").patch(authenticateToken, changePassword);
 router.route("/forgot").post(forgotPassword);
 router.route("/reset/:resetToken").post(resetPassword);
 

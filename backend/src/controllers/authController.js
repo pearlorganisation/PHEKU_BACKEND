@@ -117,39 +117,6 @@ export const logout = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse("Logout successfully", null, 200));
 });
 
-/*------------------------------------------------Handler for updating the password after Login----------------------------------------*/
-
-export const updatePassword = asyncHandler(async (req, res, next) => {
-  const { currentPassword, newPassword } = req.body;
-  const user = await User.findById(req.user._id);
-
-  if (!user) {
-    return next(new ApiError("User is not logged in", 400));
-  } else {
-    const isMatch = await user.isPasswordCorrect(currentPassword);
-    if (!isMatch) {
-      return next(new ApiError("Entered wrong current password", 400));
-    }
-    try {
-      const validate = updateValidation.parse({ newPassword });
-      console.log(validate);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        console.error("Validation errors:", error.errors);
-        return next(new ApiError("Validation failed", 400)); // Send a validation error response
-      } else {
-        console.error("An unexpected error occurred:", error);
-        return next(new ApiError("An unexpected error occurred", 500)); // Handle unexpected errors
-      }
-    }
-    user.password = newPassword;
-    await user.save();
-    return res
-      .status(200)
-      .json(new ApiResponse("Password reset successfull", null, 200));
-  }
-});
-
 // Not done yet 
 export const createUserByAdmin = asyncHandler(async (req, res, next) => {
   const {

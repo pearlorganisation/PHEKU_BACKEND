@@ -1,3 +1,4 @@
+import { uploadFileToCloudinary } from "../../configs/cloudinary.js";
 import Blog from "../../models/blog/blog.js";
 import BlogCategory from "../../models/blog/blogCategory.js";
 import ApiError from "../../utils/ApiError.js";
@@ -7,22 +8,23 @@ import { paginate } from "../../utils/pagination.js";
 
 // Create a new blog post
 export const createBlog = asyncHandler(async (req, res, next) => {
-  const { title, slug, thumbImage, content, author, category } = req.body;
-
+  const thumbImage = req.file;
+  console.log(thumbImage);
+  let thumbImageResponse = null;
+  if (thumbImage) {
+    thumbImageResponse = await uploadFileToCloudinary(thumbImage);
+    console.log("RES:: ", thumbImageResponse);
+  }
   // Check if category exists
-  const categoryExists = await BlogCategory.findById(category);
+  const categoryExists = await BlogCategory.findById(req.body.category);
   if (!categoryExists) {
     return next(new ApiError("Invalid category ID", 400));
   }
 
   // Create a new blog post
   const blog = await Blog.create({
-    title,
-    slug,
-    thumbImage,
-    content,
-    author,
-    category,
+    ...req.body,
+    thumbImage: thumbImageResponse[0],
   });
 
   if (!blog) {

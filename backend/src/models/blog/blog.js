@@ -5,7 +5,6 @@ const blogSchema = new mongoose.Schema(
     title: { type: String, required: true, unique: true },
     slug: { type: String, required: true, unique: true },
     thumbImage: {
-      asset_id: { type: String, required: true },
       public_id: { type: String, required: true },
       secure_url: { type: String, required: true },
     },
