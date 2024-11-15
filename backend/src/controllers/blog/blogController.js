@@ -60,6 +60,11 @@ export const getAllBlogs = asyncHandler(async (req, res, next) => {
     filter
   );
 
+  // Check if no blogs found
+  if (!blogs || blogs.length === 0) {
+    return next(new ApiError("No blogs found", 404));
+  }
+
   // Return paginated response with ApiResponse
   return res
     .status(200)
