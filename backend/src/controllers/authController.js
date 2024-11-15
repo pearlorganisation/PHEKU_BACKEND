@@ -120,7 +120,6 @@ export const logout = asyncHandler(async (req, res, next) => {
 // Not done yet 
 export const createUserByAdmin = asyncHandler(async (req, res, next) => {
   const {
-    fullName,
     email,
     role,
     isInvited, // Admin will provide the role
