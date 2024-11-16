@@ -69,8 +69,6 @@ export const getAllCourse = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse("Fetched all the courses", course));
 });
 
-// to get the course by id
-
 export const getCourseById = asyncHandler(async (req, res, next) => {
   const course = await Course.findById(req.params?.id);
   if (!course) {
@@ -91,8 +89,6 @@ export const deleteById = asyncHandler(async (req, res, next) => {
     .status(200)
     .json(new ApiResponse("Successfully removed the course"));
 });
-
-// funtionn to updateCourse
 
 export const updateById = asyncHandler(async (req, res, next) => {
   const courseId = req.params?.id;

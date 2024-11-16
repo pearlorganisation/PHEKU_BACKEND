@@ -26,7 +26,19 @@ export const createBlogCategory = asyncHandler(async (req, res, next) => {
 export const getBlogCategories = asyncHandler(async (req, res, next) => {
   const page = parseInt(req.query.page || "1");
   const limit = parseInt(req.query.limit || "5");
-  // const blogCategories = await BlogCategory.find(); // Fetch all fields
+  // Return all categories: For dropdown
+  if (req.query?.noPagination) {
+    // undefined when doesnt send
+    const allCategories = await BlogCategory.find();
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          "All Blog categories retrieved successfully",
+          allCategories
+        )
+      );
+  }
 
   const { data: blogCategories, pagination } = await paginate(
     BlogCategory,
