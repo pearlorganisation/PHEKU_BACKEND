@@ -101,7 +101,7 @@ export const login = asyncHandler(async (req, res, next) => {
       expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15day
     })
     .status(200)
-    .json(new ApiResponse("Logged in successfully", null, 200));
+    .json(new ApiResponse("Logged in successfully", existingUser, 200));
 });
 
 export const logout = asyncHandler(async (req, res, next) => {
