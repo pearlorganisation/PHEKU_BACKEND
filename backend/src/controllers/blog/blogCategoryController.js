@@ -2,6 +2,7 @@ import BlogCategory from "../../models/blog/blogCategory.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import ApiError from "../../utils/ApiError.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
+import { paginate } from "../../utils/pagination.js";
 
 // Create a new Blog Category
 export const createBlogCategory = asyncHandler(async (req, res, next) => {
@@ -23,7 +24,27 @@ export const createBlogCategory = asyncHandler(async (req, res, next) => {
 
 // Get all Blog Categories
 export const getBlogCategories = asyncHandler(async (req, res, next) => {
-  const blogCategories = await BlogCategory.find(); // Fetch all fields
+  const page = parseInt(req.query.page || "1");
+  const limit = parseInt(req.query.limit || "5");
+  // Return all categories: For dropdown
+  if (req.query?.noPagination) {
+    // undefined when doesnt send
+    const allCategories = await BlogCategory.find();
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          "All Blog categories retrieved successfully",
+          allCategories
+        )
+      );
+  }
+
+  const { data: blogCategories, pagination } = await paginate(
+    BlogCategory,
+    page,
+    limit
+  );
 
   if (!blogCategories || blogCategories.length === 0) {
     return next(new ApiError("No blog categories found", 404));
@@ -32,7 +53,11 @@ export const getBlogCategories = asyncHandler(async (req, res, next) => {
   return res
     .status(200)
     .json(
-      new ApiResponse("Blog categories retrieved successfully", blogCategories)
+      new ApiResponse(
+        "Blog categories retrieved successfully",
+        blogCategories,
+        pagination
+      )
     );
 });
 
