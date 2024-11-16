@@ -4,69 +4,43 @@ import University from "../models/university.js";
 import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
-// Create course handle
+// Create course
 export const createCourse = asyncHandler(async (req, res, next) => {
-  const {
-    title,
-    universitySlug,
-    slug,
-    duration,
-    courseLevel,
-    examType,
-    fees,
-    location,
-    specialization,
-  } = req.body;
-
-  // Find the university by its slug
-  const university = await University.findOne({ slug: universitySlug });
-
-  if (!university) {
-    return next(new ApiError("Unable to find the university", 400));
-  }
-
-  // Check if the course already exists in the same university
-  const courseExists = await Course.findOne({
-    title,
-    university: university._id,
-  });
-
-  if (courseExists) {
-    return next(
-      new ApiError("Course already exists in the current university", 400)
-    );
-  }
-
-  // Create a new course with the university reference
-  const course = new Course({
-    title,
-    university: university._id, // Referencing the university by ObjectId
-    slug,
-    duration,
-    courseLevel,
-    examType,
-    fees,
-    location,
-    specialization,
-  });
-  const createdCourse = await course.save();
+  const course = await Course.create(req.body);
   if (!course) {
-    return next(new ApiError("Failed to create the course try again", 400));
+    return next(new ApiError("Failed to create the course", 400));
   }
   return res
     .status(201)
-    .json(new ApiResponse("Course created successfully", createdCourse, 201));
+    .json(new ApiResponse("Course created successfully", course));
 });
 
-// to get all the course
+// Get all Courses with Pagination -> Need to complete it
 export const getAllCourse = asyncHandler(async (req, res, next) => {
-  const course = await Course.find();
-  if (course.length === 0) {
-    return next(new ApiError("No course available", 404));
+  const page = parseInt(req.query.page || "1");
+  const limit = parseInt(req.query.limit || "10");
+
+  // Set up filter object if necessary
+  const filter = {};
+
+  // Use the pagination utility function
+  const { data: courses, pagination } = await paginate(
+    Course, // The model
+    page, // Current page
+    limit, // Limit per page
+    [], // Optional population (can add if needed, e.g. { path: 'category', select: 'name' })
+    filter // Any filtering conditions
+  );
+
+  // Check if no courses are found
+  if (!courses || courses.length === 0) {
+    return next(new ApiError("No courses available", 404));
   }
+
+  // Return paginated response with ApiResponse
   return res
     .status(200)
-    .json(new ApiResponse("Fetched all the courses", course));
+    .json(new ApiResponse("Courses fetched successfully", courses, pagination));
 });
 
 export const getCourseById = asyncHandler(async (req, res, next) => {
