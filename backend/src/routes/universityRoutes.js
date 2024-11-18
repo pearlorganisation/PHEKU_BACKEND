@@ -33,4 +33,6 @@ router
     updateUniversityById
   );
 
+// router.route("/search").get(getUniversities); // For admin dropdown, for search university main website
+
 export default router;
