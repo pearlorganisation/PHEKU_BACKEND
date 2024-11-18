@@ -76,7 +76,7 @@ export const getAllBlogs = asyncHandler(async (req, res, next) => {
 // Get a single blog post by ID
 export const getBlogById = asyncHandler(async (req, res, next) => {
   const blog = await Blog.findById(req.params.id)
-    .populate("author", "name email")
+    .populate("author", "fullName email role")
     .populate("category", "blogCategoryName");
 
   if (!blog) {

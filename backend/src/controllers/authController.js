@@ -101,7 +101,7 @@ export const login = asyncHandler(async (req, res, next) => {
       expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15day
     })
     .status(200)
-    .json(new ApiResponse("Logged in successfully", null, 200));
+    .json(new ApiResponse("Logged in successfully"));
 });
 
 export const logout = asyncHandler(async (req, res, next) => {
@@ -114,10 +114,10 @@ export const logout = asyncHandler(async (req, res, next) => {
     .cookie("access-token", "", { ...COOKIE_OPTIONS, maxAge: 0 })
     .cookie("refresh-token", "", { ...COOKIE_OPTIONS, maxAge: 0 })
     .status(200)
-    .json(new ApiResponse("Logout successfully", null, 200));
+    .json(new ApiResponse("Logout successfully"));
 });
 
-// Not done yet 
+// Not done yet
 export const createUserByAdmin = asyncHandler(async (req, res, next) => {
   const {
     email,
@@ -142,5 +142,4 @@ export const createUserByAdmin = asyncHandler(async (req, res, next) => {
     role, // Assign the role as provided by the admin
     mobileNumber,
   });
-
 });
