@@ -52,7 +52,7 @@ export const getSpecializationById = asyncHandler(async (req, res, next) => {
 export const updateSpecializationById = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const { name } = req.body;
-
+  console.log("id is -----------", id)
   const specialization = await Specialization.findByIdAndUpdate(
     id,
     { name },
