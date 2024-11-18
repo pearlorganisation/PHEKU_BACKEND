@@ -60,6 +60,11 @@ export const getAllBlogs = asyncHandler(async (req, res, next) => {
     filter
   );
 
+  // Check if no blogs found
+  if (!blogs || blogs.length === 0) {
+    return next(new ApiError("No blogs found", 404));
+  }
+
   // Return paginated response with ApiResponse
   return res
     .status(200)
@@ -71,7 +76,7 @@ export const getAllBlogs = asyncHandler(async (req, res, next) => {
 // Get a single blog post by ID
 export const getBlogById = asyncHandler(async (req, res, next) => {
   const blog = await Blog.findById(req.params.id)
-    .populate("author", "name email")
+    .populate("author", "fullName email role")
     .populate("category", "blogCategoryName");
 
   if (!blog) {

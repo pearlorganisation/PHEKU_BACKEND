@@ -6,6 +6,7 @@ import University from "../models/university.js";
 import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { paginate } from "../utils/pagination.js";
 
 // Create a University
 export const createUniversity = asyncHandler(async (req, res, next) => {
@@ -55,15 +56,40 @@ export const getUniversityById = asyncHandler(async (req, res, next) => {
 
 // Get all Universities
 export const getAllUniversities = asyncHandler(async (req, res, next) => {
-  const universities = await University.find().populate("country");
+  const page = parseInt(req.query.page || "1");
+  const limit = parseInt(req.query.limit || "10");
+  const { country } = req.query;
 
-  if (!universities) {
+  // Set up filter object for the paginate function
+  const filter = {};
+  if (country) {
+    filter.country = country; // Assuming country is stored as an ID reference in University model
+  }
+
+  // Use the pagination utility function
+  const { data: universities, pagination } = await paginate(
+    University,
+    page,
+    limit,
+    [{ path: "country", select: "name" }],
+    filter
+  );
+
+  // Check if no universities found
+  if (!universities || universities.length === 0) {
     return next(new ApiError("No universities found", 404));
   }
 
+  // Return paginated response with ApiResponse
   return res
     .status(200)
-    .json(new ApiResponse("Universities retrieved successfully", universities));
+    .json(
+      new ApiResponse(
+        "Universities retrieved successfully",
+        universities,
+        pagination
+      )
+    );
 });
 
 // Update a University
