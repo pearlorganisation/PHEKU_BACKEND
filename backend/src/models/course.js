@@ -15,7 +15,7 @@ const courseSchema = new mongoose.Schema(
     specialization: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "CourseLevel",
-    }, 
+    },
   },
   { timestamps: true }
 );

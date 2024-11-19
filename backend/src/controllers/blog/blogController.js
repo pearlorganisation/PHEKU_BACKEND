@@ -41,13 +41,19 @@ export const createBlog = asyncHandler(async (req, res, next) => {
 export const getAllBlogs = asyncHandler(async (req, res, next) => {
   const page = parseInt(req.query.page || "1");
   const limit = parseInt(req.query.limit || "10");
-  const { category } = req.query;
+  const { category, search } = req.query;
 
   // Set up filter object for the paginate function
   const filter = {};
   if (category) {
     filter.category = category; // Assuming category is stored as an ID reference in Blog model
   }
+
+  // If a search term is provided, add it to the filter for title
+  if (search) {
+    filter.title = { $regex: search, $options: "i" };
+  }
+
   // Use the pagination utility function
   const { data: blogs, pagination } = await paginate(
     Blog,
