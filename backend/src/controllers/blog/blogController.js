@@ -63,7 +63,8 @@ export const getAllBlogs = asyncHandler(async (req, res, next) => {
       { path: "author", select: "fullName email" },
       { path: "category", select: "blogCategoryName" },
     ],
-    filter
+    filter,
+    "publishedAt"
   );
 
   // Check if no blogs found

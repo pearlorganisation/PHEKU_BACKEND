@@ -3,7 +3,8 @@ export const paginate = async (
   page = 1,
   limit = 5,
   populateOptions = [],
-  filter = {} // Optional filter parameter
+  filter = {}, // Optional filter parameter
+  sortField = "createdAt"
 ) => {
   const skip = (page - 1) * limit;
 
@@ -15,7 +16,7 @@ export const paginate = async (
     .find(filter)
     .skip(skip)
     .limit(limit)
-    .sort({ publishedAt: -1 });
+    .sort({ [sortField]: -1 });
   if (populateOptions.length > 0) {
     populateOptions.forEach((option) => {
       query = query.populate(option);
