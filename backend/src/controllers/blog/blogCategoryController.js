@@ -24,7 +24,7 @@ export const createBlogCategory = asyncHandler(async (req, res, next) => {
 
 // Get all Blog Categories
 export const getBlogCategories = asyncHandler(async (req, res, next) => {
-  if (req.query?.pagination) {
+  if (req.query?.page) {
     //undefined when no pagination sent
     const page = parseInt(req.query.page || "1");
     const limit = parseInt(req.query.limit || "5");
