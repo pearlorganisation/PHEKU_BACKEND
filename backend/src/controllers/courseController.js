@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import University from "../models/university.js";
 import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { paginate } from "../utils/pagination.js";
 
 // Create course
 export const createCourse = asyncHandler(async (req, res, next) => {
@@ -19,10 +20,12 @@ export const createCourse = asyncHandler(async (req, res, next) => {
 export const getAllCourse = asyncHandler(async (req, res, next) => {
   const page = parseInt(req.query.page || "1");
   const limit = parseInt(req.query.limit || "10");
-
+  const countryId = req.query.country; // The ID of the country to filter by
   // Set up filter object if necessary
   const filter = {};
 
+ 
+  // console.log(filter);
   // Use the pagination utility function
   const { data: courses, pagination } = await paginate(
     Course, // The model

@@ -5,7 +5,7 @@ const courseSchema = new mongoose.Schema(
     name: { type: String, required: true },
     slug: { type: String, required: true },
     university: { type: mongoose.Schema.Types.ObjectId, ref: "University" },
-    // country: { type: mongoose.Schema.Types.ObjectId, ref: "Country" },
+    country: { type: mongoose.Schema.Types.ObjectId, ref: "Country" },
     duration: { type: Number, required: true }, // In months, || frontend will show it in year
     courseLevel: {
       type: mongoose.Schema.Types.ObjectId,
