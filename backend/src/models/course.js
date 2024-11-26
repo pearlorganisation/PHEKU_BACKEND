@@ -9,12 +9,12 @@ const courseSchema = new mongoose.Schema(
     duration: { type: Number, required: true }, // In months, || frontend will show it in year
     courseLevel: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Specialization",
+      ref: "CourseLevel",
     },
     tutionFees: { amount: Number, currency: String },
     specialization: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "CourseLevel",
+      ref: "Specialization",
     },
   },
   { timestamps: true }
