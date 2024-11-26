@@ -4,12 +4,17 @@ const discussionSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     content: { type: String, required: true },
-    //     tags: [String],
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DiscussionCategory",
+      required: true,
+    },
+    tags: [{ type: mongoose.Schema.Types.ObjectId, ref: "DiscussionTag" }],
     votes: [
       {
         userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
