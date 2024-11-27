@@ -59,7 +59,7 @@ app.use("/api/v1/blogs", blogRouter);
 app.use("/api/v1/specializations", specializationRouter);
 app.use("/api/v1/course-levels", courseLevelRouter);
 app.use("/api/v1/roles", roleRouter);
-
+// app.use("/api/v1/discussion", discussionRouter);
 app.use(errorHandler);
 
 export { app };
