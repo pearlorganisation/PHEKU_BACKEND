@@ -39,6 +39,8 @@ import blogRouter from "./src/routes/blog/blogRoutes.js";
 import specializationRouter from "./src/routes/course/specializationRoutes.js";
 import courseLevelRouter from "./src/routes/course/courseLevelRoutes.js";
 import roleRouter from "./src/routes/role/roleRoutes.js";
+import discussionCategoryRouter from "./src/routes/QnA Forum/discussionCategoryRoutes.js";
+import discussionTagRouter from "./src/routes/QnA Forum/discussionTagRoutes.js";
 
 app.get("/", (req, res) => {
   res.status(200).send("APIs are working");
@@ -59,7 +61,10 @@ app.use("/api/v1/blogs", blogRouter);
 app.use("/api/v1/specializations", specializationRouter);
 app.use("/api/v1/course-levels", courseLevelRouter);
 app.use("/api/v1/roles", roleRouter);
-// app.use("/api/v1/discussion", discussionRouter);
+// app.use("/api/v1/discussions", discussionRouter);
+app.use("/api/v1/discussions/categories", discussionCategoryRouter);
+// app.use("/api/v1/discussion/tags", discussionTagRouter); // Need to done
+
 app.use(errorHandler);
 
 export { app };

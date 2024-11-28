@@ -14,7 +14,7 @@ const discussionSchema = new mongoose.Schema(
       ref: "DiscussionCategory",
       required: true,
     },
-    tags: [{ type: mongoose.Schema.Types.ObjectId, ref: "DiscussionTag" }],
+    tags: [{ type: mongoose.Schema.Types.ObjectId, ref: "DiscussionTag" }], // User selcted tag while creating discussion
     votes: [
       {
         userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

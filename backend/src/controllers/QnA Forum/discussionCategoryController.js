@@ -1,7 +1,7 @@
-import DiscussionCategory from "../../models/QnA Forum/discussionCategory";
-import ApiError from "../../utils/ApiError";
-import { ApiResponse } from "../../utils/ApiResponse";
-import { asyncHandler } from "../../utils/asyncHandler";
+import DiscussionCategory from "../../models/QnA Forum/discussionCategory.js";
+import ApiError from "../../utils/ApiError.js";
+import { ApiResponse } from "../../utils/ApiResponse.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
 
 // Create a new Discussion Category
 export const createDiscussionCategory = asyncHandler(async (req, res, next) => {
@@ -24,6 +24,25 @@ export const createDiscussionCategory = asyncHandler(async (req, res, next) => {
     );
 });
 
+// Get all Discussion Categories
+export const getAllDiscussionCategories = asyncHandler(
+  async (req, res, next) => {
+    const discussionCategories = await DiscussionCategory.find(); // Retrieve all categories
+
+    if (!discussionCategories || discussionCategories.length === 0) {
+      return next(new ApiError("No Discussion Categories found", 404));
+    }
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          "Discussion Categories retrieved successfully",
+          discussionCategories
+        )
+      );
+  }
+);
 // Get a single Discussion Category by ID
 export const getDiscussionCategoryById = asyncHandler(
   async (req, res, next) => {
