@@ -9,16 +9,16 @@ import {
 
 const router = express.Router();
 
-// // Define the routes
-// router
-//   .route("/")
-//   .post(createDiscussionTag) // Create a discussion tag
-//   .get(getAllDiscussionTags); // Get all discussion tags
+// Define the routes
+router
+  .route("/")
+  .post(createDiscussionTag) // Create a discussion tag
+  .get(getAllDiscussionTags); // Get all discussion tags
 
-// router
-//   .route("/:id")
-//   .get(getDiscussionTagById) // Get a discussion tag by ID
-//   .put(updateDiscussionTagById) // Update a discussion tag by ID
-//   .delete(deleteDiscussionTagById); // Delete a discussion tag by ID
+router
+  .route("/:id")
+  .get(getDiscussionTagById) // Get a discussion tag by ID
+  .put(updateDiscussionTagById) // Update a discussion tag by ID
+  .delete(deleteDiscussionTagById); // Delete a discussion tag by ID
 
 export default router;

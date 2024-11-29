@@ -1,6 +1,7 @@
 import Country from "../../models/country/country.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
+import { paginate } from "../../utils/pagination.js";
 
 // Create a new Country (only name)
 export const createCountry = asyncHandler(async (req, res, next) => {
@@ -18,17 +19,25 @@ export const createCountry = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse("Created the Country successfully", country));
 });
 
-// Get all countries (only name)
+// Get all countries (only name) with pagination
 export const getCountries = asyncHandler(async (req, res, next) => {
-  const countries = await Country.find(); // Fetch only the 'name' field
+  const page = parseInt(req.query.page || "1");
+  const limit = parseInt(req.query.limit || "10");
 
+  // Use the pagination utility function
+  const { data: countries, pagination } = await paginate(Country, page, limit);
+
+  // Check if no countries found
   if (!countries || countries.length === 0) {
     return next(new ApiError("No countries found", 404));
   }
 
+  // Return paginated response with ApiResponse
   return res
     .status(200)
-    .json(new ApiResponse("Countries retrieved successfully", countries));
+    .json(
+      new ApiResponse("Countries retrieved successfully", countries, pagination)
+    );
 });
 
 // Get a single country by ID (only name)

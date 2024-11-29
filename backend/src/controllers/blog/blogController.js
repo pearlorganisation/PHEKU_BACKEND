@@ -64,7 +64,7 @@ export const getAllBlogs = asyncHandler(async (req, res, next) => {
       { path: "category", select: "blogCategoryName" },
     ],
     filter,
-    "publishedAt" //Send here only to sort the blog at this field
+    "-publishedAt" // Newest one come first Can also write as {publishedAt: -1}
   );
 
   // Check if no blogs found
