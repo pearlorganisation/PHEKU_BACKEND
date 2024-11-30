@@ -13,7 +13,7 @@ const router = express.Router();
 router
   .route("/")
   .post(createCountry) // Create a country
-  .get(getCountries); // Get all countries
+  .get(getCountries); // Get all countries | pagination
 
 router
   .route("/:id")
