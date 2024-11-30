@@ -20,11 +20,44 @@ export const createCourse = asyncHandler(async (req, res, next) => {
 export const getAllCourse = asyncHandler(async (req, res, next) => {
   const page = parseInt(req.query.page || "1");
   const limit = parseInt(req.query.limit || "10");
-  const countryId = req.query.country; // The ID of the country to filter by
+  console.log(req.query);
+  const countryId = req.query.countryId;
+  const universityId = req.query.universityId;
+  const courseLevelId = req.query.courseLevelId;
+  const specializationId = req.query.specializationId;
+  const duration = req.query.duration; //{ duration: '12,12' }
+  const tutionFees = req.query.tutionFees;
+
   // Set up filter object if necessary
   const filter = {};
+  if (countryId) {
+    filter.country = countryId;
+  }
+  if (universityId) {
+    filter.university = universityId;
+  }
+  if (courseLevelId) {
+    filter.courseLevel = courseLevelId;
+  }
+  if (specializationId) {
+    filter.specialization = specializationId;
+  }
+  if (duration) {
+    const durationArr = duration.split(","); // [500, 1000]
+    filter["duration"] = {
+      $gte: parseInt(durationArr[0]),
+      $lte: parseInt(durationArr[1]),
+    };
+  }
+  if (tutionFees) {
+    const tutionFeesArr = tutionFees.split(","); // [500, 1000]
+    filter["tutionFees.amount"] = {
+      $gte: parseInt(tutionFeesArr[0]),
+      $lte: parseInt(tutionFeesArr[1]),
+    };
+  }
+  console.log(filter);
 
- 
   // console.log(filter);
   // Use the pagination utility function
   const { data: courses, pagination } = await paginate(

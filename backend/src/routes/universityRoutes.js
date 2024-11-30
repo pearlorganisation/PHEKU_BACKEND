@@ -19,7 +19,7 @@ router
     ]),
     createUniversity
   ) // Multer middleware to handle file uploads
-  .get(getAllUniversities);
+  .get(getAllUniversities); // Admin panel get uni by countryId(course creation)
 
 router
   .route("/:id")

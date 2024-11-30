@@ -2,6 +2,7 @@ import { asyncHandler } from "../../utils/asyncHandler.js";
 import ApiError from "../../utils/ApiError.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import Specialization from "../../models/course/specialization .js";
+import { paginate } from "../../utils/pagination.js";
 
 // Create a new specialization
 export const createSpecialization = asyncHandler(async (req, res, next) => {
@@ -23,7 +24,15 @@ export const createSpecialization = asyncHandler(async (req, res, next) => {
 
 // Get all specializations
 export const getSpecializations = asyncHandler(async (req, res, next) => {
-  const specializations = await Specialization.find();
+  const page = parseInt(req.query.page || "1");
+  const limit = parseInt(req.query.limit || "10");
+
+  // Use the pagination utility function
+  const { data: specializations, pagination } = await paginate(
+    Specialization,
+    page,
+    limit
+  );
 
   if (!specializations || !specializations.length) {
     return next(new ApiError("No specializations found", 404));
@@ -31,7 +40,13 @@ export const getSpecializations = asyncHandler(async (req, res, next) => {
 
   return res
     .status(200)
-    .json(new ApiResponse("Fetched all specializations", specializations));
+    .json(
+      new ApiResponse(
+        "Fetched all specializations",
+        specializations,
+        pagination
+      )
+    );
 });
 
 // Get a specialization by ID
