@@ -16,31 +16,72 @@ export const createCourse = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse("Course created successfully", course));
 });
 
-// Get all Courses with Pagination -> Need to complete it
+// Get all Courses
 export const getAllCourse = asyncHandler(async (req, res, next) => {
-  const page = parseInt(req.query.page || "1");
-  const limit = parseInt(req.query.limit || "10");
-  const countryId = req.query.country; // The ID of the country to filter by
-  // Set up filter object if necessary
-  const filter = {};
+  // Extract query parameters with default values
+  const {
+    page = "1",
+    limit = "10",
+    countryId,
+    universityId,
+    courseLevelId,
+    specializationId,
+    duration,
+    tutionFees,
+  } = req.query;
 
- 
-  // console.log(filter);
-  // Use the pagination utility function
+  // Convert query parameters to integers where necessary
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+
+  // Helper function to handle multiple selection
+  const handleMultiSelect = (value) =>
+    value ? { $in: value.split(",") } : undefined;
+
+  // Construct filter object dynamically
+  const filter = {
+    ...(countryId && { country: handleMultiSelect(countryId) }),
+    ...(universityId && { university: handleMultiSelect(universityId) }),
+    ...(courseLevelId && { courseLevel: handleMultiSelect(courseLevelId) }),
+    ...(specializationId && {
+      specialization: handleMultiSelect(specializationId),
+    }),
+    ...(duration && {
+      duration: {
+        $gte: parseInt(duration.split(",")[0]),
+        $lte: parseInt(duration.split(",")[1]),
+      },
+    }),
+    ...(tutionFees && {
+      "tutionFees.amount": {
+        $gte: parseInt(tutionFees.split(",")[0]),
+        $lte: parseInt(tutionFees.split(",")[1]),
+      },
+    }),
+  };
+
+  console.log("Filter:", filter); // Debugging filter object
+
+  // Fetch paginated data
   const { data: courses, pagination } = await paginate(
-    Course, // The model
-    page, // Current page
-    limit, // Limit per page
-    [], // Optional population (can add if needed, e.g. { path: 'category', select: 'name' })
-    filter // Any filtering conditions
+    Course,
+    pageNum,
+    limitNum,
+    [
+      { path: "country" }, // Fetch only required fields if neccessary
+      { path: "university" },
+      { path: "specialization" },
+      { path: "courseLevel" },
+    ],
+    filter
   );
 
-  // Check if no courses are found
+  // Handle empty result
   if (!courses || courses.length === 0) {
     return next(new ApiError("No courses available", 404));
   }
 
-  // Return paginated response with ApiResponse
+  // Return response
   return res
     .status(200)
     .json(new ApiResponse("Courses fetched successfully", courses, pagination));
@@ -51,51 +92,28 @@ export const getCourseById = asyncHandler(async (req, res, next) => {
   if (!course) {
     return next(new ApiError("Unable to get the course", 404));
   }
-  return res
-    .status(200)
-    .json(new ApiResponse("Fetched the course", course, 200));
+  return res.status(200).json(new ApiResponse("Fetched the course", course));
 });
 
-export const deleteById = asyncHandler(async (req, res, next) => {
-  const remCourse = await Course.findByIdAndDelete(req.params?.id);
+export const deleteCourseById = asyncHandler(async (req, res, next) => {
+  const deletedCourse = await Course.findByIdAndDelete(req.params?.id);
 
-  if (!remCourse) {
+  if (!deletedCourse) {
     return next(new ApiError("Failed to delete the course", 400));
   }
   return res
     .status(200)
-    .json(new ApiResponse("Successfully removed the course"));
+    .json(new ApiResponse("Successfully deleted the course"));
 });
 
-export const updateById = asyncHandler(async (req, res, next) => {
-  const courseId = req.params?.id;
-  console.log(courseId);
-  const {
-    title,
-    duration,
-    courseLevel,
-    examType,
-    fees,
-    location,
-    specialization,
-  } = req.body;
-  console.log(title);
+export const updateCourseById = asyncHandler(async (req, res, next) => {
   const updatedCourse = await Course.findByIdAndUpdate(
-    courseId,
+    req.params?.id,
+    req.body,
     {
-      $set: {
-        title,
-        "duration.minDuration": duration?.minDuration,
-        "duration.maxDuration": duration?.maxDuration,
-        "fees.minAmount": fees?.minAmount,
-        "fees.maxAmount": fees?.maxAmount,
-        courseLevel,
-        examType,
-        location,
-        specialization,
-      },
-    },
-    { new: true } // Return the updated document
+      new: true,
+      runValidators: true,
+    }
   );
 
   if (!updatedCourse) {
