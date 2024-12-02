@@ -18,6 +18,7 @@ const courseSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Specialization",
     },
+    description: { type: String, required: true }, // Edittor
   },
   { timestamps: true }
 );
