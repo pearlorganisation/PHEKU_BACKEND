@@ -4,6 +4,7 @@ import {
   deleteUniversityById,
   getAllUniversities,
   getUniversityById,
+  syncFaculties,
   updateUniversityById,
 } from "../controllers/universityController.js";
 import { upload } from "../middlewares/multerMiddleware.js";
@@ -33,6 +34,7 @@ router
     updateUniversityById
   );
 
+router.route("/:universityId/faculties/sync").patch(syncFaculties);
 // router.route("/search").get(getUniversities); // For admin dropdown, for search university main website
 
 export default router;

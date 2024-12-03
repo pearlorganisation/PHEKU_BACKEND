@@ -166,3 +166,51 @@ export const deleteUniversityById = asyncHandler(async (req, res, next) => {
     .status(200)
     .json(new ApiResponse("University deleted successfully"));
 });
+
+export const syncFaculties = asyncHandler(async (req, res, next) => {
+  const { universityId } = req.params;
+  const { addFaculties, removeFacultyIds } = req.body; // Arrays of faculties to add and IDs to remove
+  const facultiesToAdd = Array.isArray(addFaculties)
+    ? addFaculties
+    : [addFaculties]; // Ensure it's always an array, No need for removeFacultyIds as we using $in
+
+  const updateOperations = [];
+
+  if (facultiesToAdd?.length) {
+    updateOperations.push({
+      updateOne: {
+        filter: { _id: universityId },
+        update: { $push: { faculties: { $each: facultiesToAdd } } }, // [{},{}] -> each object will be pushed
+      },
+    });
+  }
+
+  if (removeFacultyIds?.length) {
+    updateOperations.push({
+      updateOne: {
+        filter: { _id: universityId },
+        update: { $pull: { faculties: { _id: { $in: removeFacultyIds } } } }, //$in operator is used to check if the faculty._id is in the removeFacultyIds array.
+      },
+    });
+  }
+
+  if (updateOperations.length > 0) {
+    await University.bulkWrite(updateOperations);
+  }
+
+  // Clean up `null` values and fetch the updated university in a single query
+  const updatedUniversity = await University.findOneAndUpdate(
+    { _id: universityId },
+    { $pull: { faculties: null } }, // Remove `null` values
+    { new: true }
+  );
+
+  if (!updatedUniversity) {
+    return next(new ApiError("University not found", 404));
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse("Faculties synced successfully", updatedUniversity));
+});
+
