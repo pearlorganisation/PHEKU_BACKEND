@@ -20,15 +20,15 @@ const universitySchema = new mongoose.Schema(
     state: { type: String, required: true },
     district: { type: String, required: true },
     city: { type: String, required: true },
-    address: { type: String, required: true }, 
+    address: { type: String, required: true },
     estdYear: { type: String },
     email: { type: String },
     location: { type: String, required: true }, // Embeded link of googel map location
     website: { type: String, required: true },
     phone: { type: String },
     ranking: { global: Number, national: Number },
-    totalCourse: { type: Number }, // No need to parse these from string to num
-    totalRating: { type: Number },
+    totalCourse: { type: Number, default: 0 }, // No need to parse these from string to num
+    totalRating: { type: Number, default: 0 },
     faculties: [facultySchema], // Array of faculty members
   },
   { timestamps: true }

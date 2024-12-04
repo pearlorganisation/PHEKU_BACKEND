@@ -2,6 +2,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import cors from "cors";
+import { errorHandler } from "./src/middlewares/errorHandler.js";
 
 const app = express();
 
@@ -28,8 +29,8 @@ app.set("view engine", "ejs");
 import authRouter from "./src/routes/authRoutes.js";
 import userRouter from "./src/routes/userRoutes.js";
 import universityRouter from "./src/routes/universityRoutes.js";
-import { errorHandler } from "./src/middlewares/errorHandler.js";
-import courseRouter from "./src/routes/courseRoutes.js";
+
+import courseRouter from "./src/routes/course/courseRoutes.js";
 import jobRouter from "./src/routes/jobRoutes.js";
 import accomodationRouter from "./src/routes/accomodationRoutes.js";
 import examRouter from "./src/routes/examRoutes.js";

@@ -1,13 +1,13 @@
-import Course from "../models/course.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
-import University from "../models/university.js";
-import ApiError from "../utils/ApiError.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
-import { paginate } from "../utils/pagination.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import ApiError from "../../utils/ApiError.js";
+import { ApiResponse } from "../../utils/ApiResponse.js";
+import { paginate } from "../../utils/pagination.js";
+import Course from "../../models/course/course.js";
 
 // Create course
 export const createCourse = asyncHandler(async (req, res, next) => {
-  const course = await Course.create(req.body);
+  const course = new Course(req.body);
+  await course.save(); // Explicitly calls the save method to call post middleware
   if (!course) {
     return next(new ApiError("Failed to create the course", 400));
   }
@@ -96,7 +96,7 @@ export const getCourseById = asyncHandler(async (req, res, next) => {
 });
 
 export const deleteCourseById = asyncHandler(async (req, res, next) => {
-  const deletedCourse = await Course.findByIdAndDelete(req.params?.id);
+  const deletedCourse = await Course.findByIdAndDelete(req.params?.id); //findByIdAndDelete internally calls findOneAndDelete
 
   if (!deletedCourse) {
     return next(new ApiError("Failed to delete the course", 400));
