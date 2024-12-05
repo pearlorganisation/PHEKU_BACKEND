@@ -58,12 +58,22 @@ export const getUniversityById = asyncHandler(async (req, res, next) => {
 export const getAllUniversities = asyncHandler(async (req, res, next) => {
   const page = parseInt(req.query.page || "1");
   const limit = parseInt(req.query.limit || "10");
-  const { country } = req.query;
+  const { country, search } = req.query; // country is id
 
   // Set up filter object for the paginate function
   const filter = {};
   if (country) {
     filter.country = country; // Assuming country is stored as an ID reference in University model
+  }
+  if (search) {
+    // Case-insensitive search on name and city fields
+    filter.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { state: { $regex: search, $options: "i" } },
+      { city: { $regex: search, $options: "i" } },
+      { district: { $regex: search, $options: "i" } },
+      { address: { $regex: search, $options: "i" } },
+    ];
   }
 
   // Use the pagination utility function
@@ -213,4 +223,3 @@ export const syncFaculties = asyncHandler(async (req, res, next) => {
     .status(200)
     .json(new ApiResponse("Faculties synced successfully", updatedUniversity));
 });
-

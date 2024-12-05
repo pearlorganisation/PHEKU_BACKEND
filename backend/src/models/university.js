@@ -16,7 +16,7 @@ const universitySchema = new mongoose.Schema(
     facilities: { type: String }, // Edditor
     coverPhoto: { secure_url: { type: String }, public_id: { type: String } },
     logo: { secure_url: { type: String }, public_id: { type: String } },
-    country: { type: mongoose.Schema.Types.ObjectId, ref: "Country" },
+    country: { type: mongoose.Schema.Types.ObjectId, ref: "Country" }, // Filtering
     state: { type: String, required: true },
     district: { type: String, required: true },
     city: { type: String, required: true },
