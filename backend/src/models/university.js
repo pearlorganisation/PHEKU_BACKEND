@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+// import { updateTotalCoursesForCountry } from "../helpers/updateTotalCourses";
 
 const facultySchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -33,6 +34,8 @@ const universitySchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+
 
 const University = mongoose.model("University", universitySchema);
 

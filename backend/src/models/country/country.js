@@ -17,7 +17,7 @@ const countrySchema = new mongoose.Schema(
 //       type: String,
 //       required: true,
 //     },
-//     totalCourses: {
+//     totalCourses: { // 
 //       type: Number,
 //       default: 0,
 //     },
