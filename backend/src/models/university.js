@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-// import { updateTotalCoursesForCountry } from "../helpers/updateTotalCourses";
+import { updateTotalCoursesForCountry } from "../helpers/updateTotalCourses.js";
 
 const facultySchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -35,7 +35,15 @@ const universitySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Middleware to update totalCourses in Country after save
+universitySchema.post("save", async function () {
+  await updateTotalCoursesForCountry(this.country);
+});
 
+// Middleware to update totalCourses in Country after delete
+universitySchema.post("remove", async function () {
+  await updateTotalCoursesForCountry(this.country);
+});
 
 const University = mongoose.model("University", universitySchema);
 

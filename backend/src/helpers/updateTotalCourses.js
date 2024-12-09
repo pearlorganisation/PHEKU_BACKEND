@@ -1,32 +1,24 @@
-export const updateTotalCoursesForCountry = async (countryId) => {
-  try {
-    // Aggregate the totalCourse for all universities in the specified country
-    const result = await University.aggregate([
-      {
-        $match: { country: mongoose.Types.ObjectId(countryId) }, // Match universities by country ID
-      },
-      {
-        $group: {
-          _id: "$country", // Group by country ID
-          totalCourses: { $sum: "$totalCourse" }, // Sum the totalCourse field
-        },
-      },
-    ]);
+import Country from "../models/country/country.js";
 
-    // Get the totalCourses from the aggregation result
-    const totalCourses = result.length > 0 ? result[0].totalCourses : 0;
+export const updateTotalUniversitiesForCountry = async (countryId) => {
+  try {
+    // Count the total number of universities in the specified country
+    const [{ totalUniversities }] = await University.aggregate([
+      { $match: { country: mongoose.Types.ObjectId(countryId) } },
+      { $group: { _id: "$country", totalUniversities: { $sum: 1 } } },
+    ]);
 
     // Update the Country document
     await Country.findByIdAndUpdate(
       countryId,
-      { totalCourses },
+      { totalUniversities },
       { new: true, runValidators: true }
     );
 
     console.log(
-      `Updated totalCourses for country ${countryId}: ${totalCourses}`
+      `Updated totalUniversities for country ${countryId}: ${totalUniversities}`
     );
   } catch (error) {
-    console.error("Error updating total courses for country:", error);
+    console.error("Error updating total universities for country:", error);
   }
 };

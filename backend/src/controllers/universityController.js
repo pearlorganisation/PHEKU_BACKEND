@@ -152,10 +152,9 @@ export const updateUniversityById = asyncHandler(async (req, res, next) => {
   }
 
   // Send success response
-  return res.status(200).json({
-    message: "University updated successfully",
-    data: university,
-  });
+  return res
+    .status(200)
+    .json(new ApiResponse("University updated successfully", university));
 });
 
 // Delete a University
