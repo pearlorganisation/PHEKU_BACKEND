@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { updateTotalCoursesForCountry } from "../helpers/updateTotalCourses.js";
+import { updateTotalUniversitiesForCountry } from "../helpers/updateTotalUniversities.js";
 
 const facultySchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -24,7 +24,7 @@ const universitySchema = new mongoose.Schema(
     address: { type: String, required: true },
     estdYear: { type: String },
     email: { type: String },
-    location: { type: String, required: true }, // Embeded link of googel map location
+    location: { type: String, required: true }, // Embeded link of google map location
     website: { type: String, required: true },
     phone: { type: String },
     ranking: { global: Number, national: Number },
@@ -35,14 +35,24 @@ const universitySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Middleware to update totalCourses in Country after save
+// Middleware to update totalUniversities in Country after save
 universitySchema.post("save", async function () {
-  await updateTotalCoursesForCountry(this.country);
+  //For [save] middleware, this refers to the actual document.
+  console.log("In save university--");
+  await updateTotalUniversitiesForCountry(this.country);
 });
 
-// Middleware to update totalCourses in Country after delete
-universitySchema.post("remove", async function () {
-  await updateTotalCoursesForCountry(this.country);
+// Middleware to update totalUniversities in Country after delete
+universitySchema.post("findOneAndDelete", async function (doc) {
+  try {
+    if (doc) {
+      await updateTotalUniversitiesForCountry(doc.country);
+    } else {
+      console.log("No document found to process on delete.");
+    }
+  } catch (error) {
+    console.error("Error during post deletion:", error);
+  }
 });
 
 const University = mongoose.model("University", universitySchema);

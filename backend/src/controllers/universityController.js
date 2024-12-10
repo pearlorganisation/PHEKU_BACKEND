@@ -35,7 +35,7 @@ export const createUniversity = asyncHandler(async (req, res, next) => {
   }
 
   return res
-    .status(200)
+    .status(201)
     .json(new ApiResponse("Created the University Successfully", university));
 });
 
@@ -159,12 +159,14 @@ export const updateUniversityById = asyncHandler(async (req, res, next) => {
 
 // Delete a University
 export const deleteUniversityById = asyncHandler(async (req, res, next) => {
-  const deletedUniversity = await University.findByIdAndDelete(req.params.id);
+  //Mongoose wraps schema fields into its internal MongooseDocument wrapper, especially when the field is nullable or uninitialized. Use lean()
+  const deletedUniversity = await University.findByIdAndDelete(
+    req.params.id
+  ).lean();
 
   if (!deletedUniversity) {
     return next(new ApiError("University not found", 404));
   }
-
   // Delete images from Cloudinary
   if (deletedUniversity?.coverPhoto)
     await deleteFileFromCloudinary(deletedUniversity.coverPhoto);
