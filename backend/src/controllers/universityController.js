@@ -169,6 +169,7 @@ export const deleteUniversityById = asyncHandler(async (req, res, next) => {
   }
   // Delete images from Cloudinary
   if (deletedUniversity?.coverPhoto)
+    // Use lean so that we get null if not photo is there
     await deleteFileFromCloudinary(deletedUniversity.coverPhoto);
   if (deletedUniversity?.logo)
     await deleteFileFromCloudinary(deletedUniversity.logo);

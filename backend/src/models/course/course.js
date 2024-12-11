@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { updateTotalCoursesForUniversity } from "../../helpers/updateTotalUniversities.js";
 
 const courseSchema = new mongoose.Schema(
   {
@@ -28,26 +29,13 @@ courseSchema.index({ name: 1, university: 1 }, { unique: true });
 // Middlewares
 //To count the total number of courses for particular university
 courseSchema.post("save", async function (doc, next) {
-  //doc is the newly saved or updated document. doc = deleted object
+  //doc is the newly saved or updated document. Can also use [this] , in save this contain the document created
   if (!doc) {
     console.log("No document created");
     next();
   }
   console.log("In Save");
-  try {
-    const universityId = doc.university;
-    const courseCount = await mongoose
-      .model("Course")
-      .countDocuments({ university: universityId });
-
-    await mongoose.model("University").findByIdAndUpdate(universityId, {
-      totalCourse: courseCount,
-    });
-
-    next();
-  } catch (error) {
-    next(error);
-  }
+  await updateTotalCoursesForUniversity(doc.university); // No need to attached total course for country
 });
 
 // To decrement the count for total course in  university after course is deleted
@@ -62,6 +50,8 @@ courseSchema.post("findOneAndDelete", async function (doc, next) {
     const universityId = doc.university;
 
     // Decrement the totalCourse count
+    // Cons: Risk of Inconsistencies: If an external process modifies the data (e.g., deletes or adds records without updating the count), the count could become inaccurate.
+    // Sol: Can use aggreagation approach just like univesity: countDocuments through query
     await mongoose.model("University").findByIdAndUpdate(universityId, {
       $inc: { totalCourse: -1 },
     });
