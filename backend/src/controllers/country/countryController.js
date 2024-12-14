@@ -24,8 +24,17 @@ export const getCountries = asyncHandler(async (req, res, next) => {
   const page = parseInt(req.query.page || "1");
   const limit = parseInt(req.query.limit || "10");
 
+  const fields = req.query.fields || ""; // fields=name for dropdown
+
   // Use the pagination utility function
-  const { data: countries, pagination } = await paginate(Country, page, limit);
+  const { data: countries, pagination } = await paginate(
+    Country,
+    page,
+    limit,
+    [],
+    {},
+    fields
+  ); // Add a field as this will use in other places too
 
   // Check if no countries found
   if (!countries || countries.length === 0) {

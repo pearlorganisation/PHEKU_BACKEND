@@ -13,7 +13,7 @@ const router = express.Router();
 router
   .route("/")
   .post(createCountry) // Create a country
-  .get(getCountries); // Get all countries | pagination
+  .get(getCountries); // Get all countries | pagination | used during course creation, university creation
 
 router
   .route("/:id")

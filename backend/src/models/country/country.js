@@ -5,10 +5,12 @@ const countrySchema = new mongoose.Schema(
     name: { type: String, required: true, unique: true },
     slug: { type: String, required: true, unique: true },
     thumbImage: {
+      // To show on study abroad page
       public_id: { type: String, required: true },
       secure_url: { type: String, required: true },
     },
     coverPhoto: {
+      // More details on study abroad page
       public_id: { type: String, required: true },
       secure_url: { type: String, required: true },
     },
