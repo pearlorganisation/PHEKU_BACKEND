@@ -17,8 +17,8 @@ export const paginate = async (
 
   // Apply field selection if provided
   if (fields) {
-    const fields = fields.split(",").join(" "); // Convert comma-separated to space-separated
-    query = query.select(fields);
+    const selectedFields = fields.split(",").join(" "); // Convert comma-separated to space-separated
+    query = query.select(selectedFields);
   }
 
   if (populateOptions.length > 0) {
