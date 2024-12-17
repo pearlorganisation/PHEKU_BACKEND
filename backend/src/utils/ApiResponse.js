@@ -17,8 +17,8 @@ class ApiResponse {
     return {
       success: this.success,
       message: this.message,
-      ...(this.data && { data: this.data }), // Only include data if it's present
       ...(this.metadata && { metadata: this.metadata }),
+      ...(this.data && { data: this.data }), // Only include data if it's present
     };
   }
 }

@@ -74,7 +74,7 @@ export const getCountries = asyncHandler(async (req, res, next) => {
 
 // Get a single country by ID (only name)
 export const getCountryById = asyncHandler(async (req, res, next) => {
-  const country = await Country.findById(req.params.id); 
+  const country = await Country.findById(req.params.id);
 
   if (!country) {
     return next(new ApiError("Country not found", 404));
