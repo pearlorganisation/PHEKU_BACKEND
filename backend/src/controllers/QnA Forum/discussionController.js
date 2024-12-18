@@ -80,12 +80,26 @@ export const voteDiscussion = asyncHandler(async (req, res, next) => {
   // Save the discussion with the updated votes
   await discussion.save();
 
-  // Calculate total votes (sum of all upvotes and downvotes)
-  const totalVotes = discussion.votes.reduce((sum, v) => sum + v.vote, 0);
+  // Calculate only upvotes
+  const upvotes = discussion.votes.filter((v) => v.vote === 1).length;
 
   // Return success response
   return res.status(200).json({
     message: "Vote updated successfully.",
-    totalVotes,
+    userVote: vote,
+    upvotes,
   });
+});
+
+// getting status for particular discussion->  API not tested yet
+export const getVoteStatus = asyncHandler(async (req, res, next) => {
+  const { id } = req.params; // Discussion ID
+  const userId = req.user.id; // User ID from token
+
+  const userVote = await Vote.findOne({ userId, discussionId: id }).then(
+    (vote) => vote?.vote || 0
+  );
+  const upvotesCount = await Vote.countDocuments({ discussionId: id, vote: 1 });
+
+  return res.status(200).json({ userVote, upvotesCount });
 });
