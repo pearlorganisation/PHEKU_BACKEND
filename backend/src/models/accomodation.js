@@ -88,7 +88,7 @@ const accommodationSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true } // Automatically manage createdAt and updatedAt fields
+  { timestamps: true }
 );
 
 // Create a 2dsphere index on the location field

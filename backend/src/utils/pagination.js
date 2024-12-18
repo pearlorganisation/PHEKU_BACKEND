@@ -4,6 +4,7 @@ export const paginate = async (
   limit = 5,
   populateOptions = [],
   filter = {}, // Optional filter parameter
+  fields = "",
   sortField = { createdAt: -1 }
 ) => {
   const skip = (page - 1) * limit;
@@ -13,6 +14,13 @@ export const paginate = async (
 
   // Fetch paginated data with filtering and optional population
   let query = model.find(filter).skip(skip).limit(limit).sort(sortField);
+
+  // Apply field selection if provided
+  if (fields) {
+    const selectedFields = fields.split(",").join(" "); // Convert comma-separated to space-separated
+    query = query.select(selectedFields);
+  }
+
   if (populateOptions.length > 0) {
     populateOptions.forEach((option) => {
       query = query.populate(option);

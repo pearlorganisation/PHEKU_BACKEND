@@ -1,37 +1,25 @@
 import mongoose from "mongoose";
 
-// Define the Country schema
 const countrySchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      unique: true,
+    name: { type: String, required: true, unique: true },
+    slug: { type: String, required: true, unique: true },
+    thumbImage: {
+      // To show on study abroad page
+      public_id: { type: String, required: true },
+      secure_url: { type: String, required: true },
     },
-//     slug: {
-//       type: String,
-//       required: true,
-//       unique: true,
-//     },
-//     coverPhotoSrc: {
-//       type: String,
-//       required: true,
-//     },
-//     totalCourses: {
-//       type: Number,
-//       default: 0,
-//     },
-//     totalUniversities: {
-//       type: Number,
-//       default: 0,
-//     },
+    coverPhoto: {
+      // More details on study abroad page
+      public_id: { type: String, required: true },
+      secure_url: { type: String, required: true },
+    },
+    about: { type: String, default: "" }, // Edditor: Visa req, cultural tips, living expenses
+    totalUniversities: { type: Number, default: 0 },
   },
-  {
-    timestamps: true, 
-  }
+  { timestamps: true }
 );
 
-// Create the Country model
 const Country = mongoose.model("Country", countrySchema);
 
 export default Country;
