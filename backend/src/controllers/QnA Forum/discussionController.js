@@ -4,23 +4,13 @@ import { ApiResponse } from "../../utils/ApiResponse.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 
 export const createDiscussion = asyncHandler(async (req, res, next) => {
-  const { title, content, user, category, tags } = req.body;
-
-  // Validate required fields
-  if (!title || !content || !user || !category) {
-    return next(
-      new ApiError(
-        "Title, content, user, and category are required fields",
-        400
-      )
-    );
-  }
+  const { title, content, category, tags } = req.body; // take user from token
 
   // Create a new discussion
   const discussion = await Discussion.create({
     title,
     content,
-    user,
+    user: req.user._id,
     category,
     tags,
   });
@@ -91,15 +81,15 @@ export const voteDiscussion = asyncHandler(async (req, res, next) => {
   });
 });
 
-// getting status for particular discussion->  API not tested yet
-export const getVoteStatus = asyncHandler(async (req, res, next) => {
-  const { id } = req.params; // Discussion ID
-  const userId = req.user.id; // User ID from token
+// // getting status for particular discussion->  API not tested yet
+// export const getVoteStatus = asyncHandler(async (req, res, next) => {
+//   const { id } = req.params; // Discussion ID
+//   const userId = req.user.id; // User ID from token
 
-  const userVote = await Vote.findOne({ userId, discussionId: id }).then(
-    (vote) => vote?.vote || 0
-  );
-  const upvotesCount = await Vote.countDocuments({ discussionId: id, vote: 1 });
+//   const userVote = await Vote.findOne({ userId, discussionId: id }).then(
+//     (vote) => vote?.vote || 0
+//   );
+//   const upvotesCount = await Vote.countDocuments({ discussionId: id, vote: 1 });
 
-  return res.status(200).json({ userVote, upvotesCount });
-});
+//   return res.status(200).json({ userVote, upvotesCount });
+// });

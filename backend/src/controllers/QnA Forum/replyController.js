@@ -52,7 +52,7 @@ export const getAllReplyForDiscussion = asyncHandler(async (req, res, next) => {
 
   // Fetch all replies for the discussion
   const replies = await Reply.find({ discussion: discussionId })
-    .populate("user", "userName email")
+    .populate("user", "fullName email")
     .lean(); // Use `lean` for better performance when manipulating data
 
   if (!replies || replies.length === 0) {
