@@ -6,7 +6,9 @@ import {
 import { authenticateToken } from "../../middlewares/authMiddleware.js";
 import {
   addReply,
+  deleteReplyById,
   getAllReplyForDiscussion,
+  updateReplyById,
 } from "../../controllers/QnA Forum/replyController.js";
 
 const router = express.Router();
@@ -19,10 +21,10 @@ router
   .post(authenticateToken, addReply)
   .get(getAllReplyForDiscussion);
 
-// router
-//   .route("/reply/:replyId")
-//   .patch(authenticateToken, updateReplyById)
-//   .delete(authenticateToken, deleteReplyById);
+router
+  .route("/reply/:replyId")
+  .patch(authenticateToken, updateReplyById)
+  .delete(authenticateToken, deleteReplyById);
 
 //Vote on reply
 

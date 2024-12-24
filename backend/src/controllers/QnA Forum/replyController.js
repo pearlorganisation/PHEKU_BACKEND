@@ -82,3 +82,51 @@ export const getAllReplyForDiscussion = asyncHandler(async (req, res, next) => {
     .status(200)
     .json(new ApiResponse("Replies fetched successfully", result));
 });
+
+export const updateReplyById = asyncHandler(async (req, res, next) => {
+  const { replyId } = req.params;
+  const { text } = req.body;
+
+  // Find the reply by ID
+  const reply = await Reply.findById(replyId);
+
+  // If reply is not found
+  if (!reply) {
+    return next(new ApiError("Reply not found", 404));
+  }
+
+  // Check if the logged-in user is the owner of the reply
+  if (reply.user.toString() !== req.user.id) {
+    return next(new ApiError("You are not authorized to edit this reply", 403));
+  }
+
+  // Update the reply
+  reply.text = text;
+  const updatedReply = await reply.save();
+
+  // Return success response
+  return res
+    .status(200)
+    .json(new ApiResponse("Reply updated successfully", updatedReply));
+});
+
+export const deleteReplyById = asyncHandler(async (req, res, next) => {
+  const { replyId } = req.params;
+
+  // Attempt to delete the reply with a filter
+  const result = await Reply.deleteOne({ _id: replyId, user: req.user.id }); // { acknowledged: true, deletedCount: 1 }
+  console.log(result);
+
+  if (!result.deletedCount) {
+    //deletedCount will be 0 if no doc deleted
+    return next(
+      new ApiError(
+        "Reply not found or you are not authorized to delete it",
+        404
+      )
+    );
+  }
+
+  // Return success response
+  return res.status(200).json(new ApiResponse("Reply deleted successfully"));
+});
