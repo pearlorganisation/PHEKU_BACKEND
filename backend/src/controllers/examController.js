@@ -28,7 +28,7 @@ export const getExam = asyncHandler(async(req,res,next)=>{
 // Get by Id //
 
 export const examById = asyncHandler(async(req,res,next)=>{
-    const data = await Exam.findById(req.params?.id)
+    const data = await Exam.findById(req.params?.id).populate("availableInCountries")
     if(!data){
         return next(new ApiError("Failed to retrive the data",400))
     }return res.status(200).json(new ApiResponse("Successfully retrieved the data",data,200))
