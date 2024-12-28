@@ -10,16 +10,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 export const createExam = asyncHandler(async(req,res,next)=>{
     const { title, course, description, date, duration, location, invigilator, instructions } = req.body;
     
-    const data = await Exam.create({
-        title,
-        course,
-        description,
-        date,
-        duration,
-        location,
-        invigilator,
-        instructions
-    })
+    const data = await Exam.create(req.body)
     if(data.length ===0){
         return next(new ApiError("Couldn't create Exam",400))
     }return res.status(200).json(new ApiResponse("Successfully created the Exam",data,200));
@@ -28,7 +19,7 @@ export const createExam = asyncHandler(async(req,res,next)=>{
 // GET //
 
 export const getExam = asyncHandler(async(req,res,next)=>{
-    const data = await Exam.find();
+    const data = await Exam.find() 
     if(data.length===0){
         return next(new ApiError("Failed to retrive the data", 404))
     }return res.status(200).json(new ApiResponse("Retrived the data successfully",data, 200));
@@ -37,7 +28,7 @@ export const getExam = asyncHandler(async(req,res,next)=>{
 // Get by Id //
 
 export const examById = asyncHandler(async(req,res,next)=>{
-    const data = await Exam.findById(req.params?.id);
+    const data = await Exam.findById(req.params?.id)
     if(!data){
         return next(new ApiError("Failed to retrive the data",400))
     }return res.status(200).json(new ApiResponse("Successfully retrieved the data",data,200))

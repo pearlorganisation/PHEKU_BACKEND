@@ -28,7 +28,7 @@ export const getAllCourse = asyncHandler(async (req, res, next) => {
     duration,
     tutionFees,
   } = req.query;
-
+console.log('--------------the duration', duration)
   // Convert query parameters to integers where necessary
   const pageNum = parseInt(page);
   const limitNum = parseInt(limit);
