@@ -35,7 +35,7 @@ export const createUniversity = asyncHandler(async (req, res, next) => {
   }
 
   return res
-    .status(200)
+    .status(201)
     .json(new ApiResponse("Created the University Successfully", university));
 });
 
@@ -58,12 +58,22 @@ export const getUniversityById = asyncHandler(async (req, res, next) => {
 export const getAllUniversities = asyncHandler(async (req, res, next) => {
   const page = parseInt(req.query.page || "1");
   const limit = parseInt(req.query.limit || "10");
-  const { country } = req.query;
+  const { country, search } = req.query; // country is id
 
   // Set up filter object for the paginate function
   const filter = {};
   if (country) {
     filter.country = country; // Assuming country is stored as an ID reference in University model
+  }
+  if (search) {
+    // Case-insensitive search on name and city fields
+    filter.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { state: { $regex: search, $options: "i" } },
+      { city: { $regex: search, $options: "i" } },
+      { district: { $regex: search, $options: "i" } },
+      { address: { $regex: search, $options: "i" } },
+    ];
   }
 
   // Use the pagination utility function
@@ -143,22 +153,24 @@ export const updateUniversityById = asyncHandler(async (req, res, next) => {
   }
 
   // Send success response
-  return res.status(200).json({
-    message: "University updated successfully",
-    data: university,
-  });
+  return res
+    .status(200)
+    .json(new ApiResponse("University updated successfully", university));
 });
 
 // Delete a University
 export const deleteUniversityById = asyncHandler(async (req, res, next) => {
-  const deletedUniversity = await University.findByIdAndDelete(req.params.id);
+  //Mongoose wraps schema fields into its internal MongooseDocument wrapper, especially when the field is nullable or uninitialized. Use lean()
+  const deletedUniversity = await University.findByIdAndDelete(
+    req.params.id
+  ).lean();
 
   if (!deletedUniversity) {
     return next(new ApiError("University not found", 404));
   }
-
   // Delete images from Cloudinary
   if (deletedUniversity?.coverPhoto)
+    // Use lean so that we get null if not photo is there
     await deleteFileFromCloudinary(deletedUniversity.coverPhoto);
   if (deletedUniversity?.logo)
     await deleteFileFromCloudinary(deletedUniversity.logo);
@@ -166,4 +178,51 @@ export const deleteUniversityById = asyncHandler(async (req, res, next) => {
   return res
     .status(200)
     .json(new ApiResponse("University deleted successfully"));
+});
+
+export const syncFaculties = asyncHandler(async (req, res, next) => {
+  const { universityId } = req.params;
+  const { addFaculties, removeFacultyIds } = req.body; // Arrays of faculties to add and IDs to remove
+  const facultiesToAdd = Array.isArray(addFaculties)
+    ? addFaculties
+    : [addFaculties]; // Ensure it's always an array, No need for removeFacultyIds as we using $in
+
+  const updateOperations = [];
+
+  if (facultiesToAdd?.length) {
+    updateOperations.push({
+      updateOne: {
+        filter: { _id: universityId },
+        update: { $push: { faculties: { $each: facultiesToAdd } } }, // [{},{}] -> each object will be pushed
+      },
+    });
+  }
+
+  if (removeFacultyIds?.length) {
+    updateOperations.push({
+      updateOne: {
+        filter: { _id: universityId },
+        update: { $pull: { faculties: { _id: { $in: removeFacultyIds } } } }, //$in operator is used to check if the faculty._id is in the removeFacultyIds array.
+      },
+    });
+  }
+
+  if (updateOperations.length > 0) {
+    await University.bulkWrite(updateOperations);
+  }
+
+  // Clean up `null` values and fetch the updated university in a single query
+  const updatedUniversity = await University.findOneAndUpdate(
+    { _id: universityId },
+    { $pull: { faculties: null } }, // Remove `null` values
+    { new: true }
+  );
+
+  if (!updatedUniversity) {
+    return next(new ApiError("University not found", 404));
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse("Faculties synced successfully", updatedUniversity));
 });

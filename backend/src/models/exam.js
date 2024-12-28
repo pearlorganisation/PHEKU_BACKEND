@@ -15,24 +15,39 @@ const examSchema = mongoose.Schema(
     },
     date: {
       type: Date, // Date when the exam is scheduled
-      required: true,
+      
     },
     duration: {
-      type: String, // Exam duration (e.g., "2 hours", "3 hours")
-      required: true,
+       // Exam duration (e.g., "2 hours", "3 hours")
+      type: String
+    },
+    examType: {
+      type: String,
+      enum: ["Online", "Offline"],
+      required: true
     },
     location: {
-      type: String, // Physical or online location for the exam
-      required: true,
+      type: String,  
+      
     },
     invigilator: {
-      type: String, // Name of the person responsible for overseeing the exam
+      type: String,  
+    },
+    conductingAuthority:{
+      type: String,
     },
     instructions: {
-      type: String, // Additional instructions or guidelines for the exam
+      type: String,  
     },
-  },
-  {
+    availableInCountries: {
+      type: [mongoose.Schema.Types.ObjectId], // List of country IDs where the exam is available
+      ref: 'Country'
+    },
+    eligibility:{
+      type: String,
+    }
+    },
+    {
     timestamps: true, // Automatically adds createdAt and updatedAt fields
   }
 );

@@ -2,14 +2,19 @@ import express from "express";
 
 import {
   createCourse,
-  deleteById,
+  deleteCourseById,
   getAllCourse,
   getCourseById,
-  updateById,
-} from "../controllers/courseController.js";
+  updateCourseById,
+} from "../../controllers/course/courseController.js";
 
 const router = express.Router();
+
 router.route("/").post(createCourse).get(getAllCourse);
-router.route("/:id").get(getCourseById).patch(updateById).delete(deleteById);
+router
+  .route("/:id")
+  .get(getCourseById)
+  .patch(updateCourseById)
+  .delete(deleteCourseById);
 
 export default router;

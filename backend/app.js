@@ -2,6 +2,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import cors from "cors";
+import { errorHandler } from "./src/middlewares/errorHandler.js";
 
 const app = express();
 
@@ -28,8 +29,8 @@ app.set("view engine", "ejs");
 import authRouter from "./src/routes/authRoutes.js";
 import userRouter from "./src/routes/userRoutes.js";
 import universityRouter from "./src/routes/universityRoutes.js";
-import { errorHandler } from "./src/middlewares/errorHandler.js";
-import courseRouter from "./src/routes/courseRoutes.js";
+
+import courseRouter from "./src/routes/course/courseRoutes.js";
 import jobRouter from "./src/routes/jobRoutes.js";
 import accomodationRouter from "./src/routes/accomodationRoutes.js";
 import examRouter from "./src/routes/examRoutes.js";
@@ -39,9 +40,12 @@ import blogRouter from "./src/routes/blog/blogRoutes.js";
 import specializationRouter from "./src/routes/course/specializationRoutes.js";
 import courseLevelRouter from "./src/routes/course/courseLevelRoutes.js";
 import roleRouter from "./src/routes/role/roleRoutes.js";
+import discussionRouter from "./src/routes/QnA Forum/discussionRoutes.js";
+import discussionCategoryRouter from "./src/routes/QnA Forum/discussionCategoryRoutes.js";
+import discussionTagRouter from "./src/routes/QnA Forum/discussionTagRoutes.js";
 
 app.get("/", (req, res) => {
-  res.status(200).send("APIs are working");
+  res.status(200).send("APIs are working...");
   console.log("Working..");
 });
 
@@ -59,6 +63,9 @@ app.use("/api/v1/blogs", blogRouter);
 app.use("/api/v1/specializations", specializationRouter);
 app.use("/api/v1/course-levels", courseLevelRouter);
 app.use("/api/v1/roles", roleRouter);
+app.use("/api/v1/discussions", discussionRouter);
+app.use("/api/v1/discussions/categories", discussionCategoryRouter);
+app.use("/api/v1/discussions/tags", discussionTagRouter);
 
 app.use(errorHandler);
 
