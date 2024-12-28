@@ -5,15 +5,39 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadFileToCloudinary } from "../configs/cloudinary.js";
 
 export const createAccomodation = asyncHandler(async (req, res, next) => {
-  const images = req.files; // Handle file uploads
-  const response = await uploadFileToCloudinary(images);
+  const { images, amenities } = req.files;
+  // console.log(req.files);
 
   // Parse JSON fields from req.body if necessary
-  const location = req.body.location ? JSON.parse(req.body.location) : null;
-  const fees = req.body.fees ? JSON.parse(req.body.fees) : null;
+  const amenitiesNames = req.body.amenitiesNames
+    ? JSON.parse(req.body.amenitiesNames)
+    : []; //USE []-> amenitiesNamesArray.map() will work without throwing errors
+  const location = req.body.location ? JSON.parse(req.body.location) : [];
+  const fees = req.body.fees ? JSON.parse(req.body.fees) : [];
   const contactInfo = req.body.contactInfo
     ? JSON.parse(req.body.contactInfo)
-    : null;
+    : [];
+
+  const uploadedImages = images ? await uploadFileToCloudinary(images) : [];
+  console.log(amenitiesNames);
+
+  // Handle amenities upload
+  const uploadedAmenities = [];
+  if (amenities) {
+    // Array of images, if single image come {}, put it in array
+    const amenitiesArray = Array.isArray(amenities) ? amenities : [amenities];
+    const uploadedIcons = await Promise.all(
+      amenitiesArray.map(async (file, index) => {
+        const name = amenitiesNames[index] || `Amenity ${index + 1}`; // Accessing the index of amenitiesNames which is equal to index of amenitiesArray
+        console.log(name);
+        const uploaded = await uploadFileToCloudinary(file); // Assuming uploadFileToCloudinary returns an object
+        return { name, icon: uploaded[0] }; // Return the structured object with [name] and [icon]
+      })
+    );
+    //uploadedIcons:  It contain the [{name: "",icon: ""}, {}]
+    uploadedAmenities.push(...uploadedIcons);
+  }
+  // console.log(uploadedAmenities);
 
   // Create accommodation using the parsed data
   const accomodation = await Accommodation.create({
@@ -21,7 +45,8 @@ export const createAccomodation = asyncHandler(async (req, res, next) => {
     location,
     fees,
     contactInfo,
-    images: response, // Set the uploaded images
+    images: uploadedImages,
+    amenities: uploadedAmenities,
   });
 
   if (!accomodation) {

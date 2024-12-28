@@ -12,7 +12,13 @@ const router = express.Router();
 
 router
   .route("/")
-  .post(upload.array("images", 5), createAccomodation)
+  .post(
+    upload.fields([
+      { name: "images", maxCount: 5 },
+      { name: "amenities", maxCount: 10 },
+    ]),
+    createAccomodation
+  )
   .get(getAllAccomodation);
 router
   .route("/:id")
