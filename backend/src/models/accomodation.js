@@ -14,7 +14,8 @@ const accommodationSchema = new mongoose.Schema(
     ],
     location: {
       country: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Country",
         required: true,
       },
       state: {

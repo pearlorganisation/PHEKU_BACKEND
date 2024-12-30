@@ -11,7 +11,7 @@ import { paginate } from "../utils/pagination.js";
 // Create a University
 export const createUniversity = asyncHandler(async (req, res, next) => {
   const { coverPhoto, logo } = req.files; // Handle file uploads {a: [{}], b: [{}]}
-
+  console.log(req.body);
   let coverPhotoResponse = null;
   let logoResponse = null;
 
@@ -24,6 +24,10 @@ export const createUniversity = asyncHandler(async (req, res, next) => {
 
   const university = await University.create({
     ...req.body,
+    universityCoordinates: {
+      type: "Point",
+      coordinates: [req.body.latitude, req.body.longitude],
+    },
     faculties: req.body.faculties && JSON.parse(req.body.faculties),
     ranking: req.body.ranking && JSON.parse(req.body.ranking),
     coverPhoto: coverPhotoResponse ? coverPhotoResponse[0] : null,
@@ -225,3 +229,24 @@ export const syncFaculties = asyncHandler(async (req, res, next) => {
     .status(200)
     .json(new ApiResponse("Faculties synced successfully", updatedUniversity));
 });
+
+export const findNearbyUniversities = async (req, res, next) => {
+  const { lng, lat, maxDistanceInMeters } = req.query;
+
+  //Geospatial query to find nearby universities
+  const nearbyUniversities = await University.find({
+    universityCoordinates: {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: [parseFloat(lng), parseFloat(lat)], // Use accommodation's coordinates
+        },
+        $maxDistance: parseInt(maxDistanceInMeters, 10), // Maximum distance in meters
+      },
+    },
+  });
+
+  res
+    .status(200)
+    .json(new ApiResponse("Nearby universities found", nearbyUniversities));
+};
