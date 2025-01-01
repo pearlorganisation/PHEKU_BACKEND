@@ -5,6 +5,8 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import bcrypt from "bcrypt";
 import { signUpValidation, updateValidation } from "../utils/Validation.js";
+import { createTransport } from "nodemailer";
+import jwt from "jsonwebtoken";
 
 export const signup = asyncHandler(async (req, res, next) => {
   const { fullName, email, password, mobileNumber, role } = req.body;
@@ -134,12 +136,51 @@ export const createUserByAdmin = asyncHandler(async (req, res, next) => {
     return next(new ApiError("User already exists", 400));
   }
 
-  // Create new user after successful validation
+  if (isInvited) {
+    const token = jwt.sign(
+      { email, role },
+      process.env.JWT_SECRET_KEY, // Secret key
+      { expiresIn: "7d" } // Token valid for 7 days
+    );
+
+    // Create the invitation link
+    const inviteLink = `${process.env.FRONTEND_URL}/signup?token=${token}`;
+    const transporter = createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      service: "gmail",
+      auth: {
+        user: process.env.NODEMAILER_EMAIL_USER,
+        pass: process.env.NODEMAILER_EMAIL_PASS,
+      },
+    });
+
+    let mailOptions = {
+      from: process.env.NODEMAILER_MAIL,
+      to: email,
+      subject: "You’re Invited!",
+      html: `
+      <p>You have been invited to join our platform as a <b>${role}</b>.</p>
+      <p>Click <a href="${inviteLink}">here</a> to complete your registration.</p>
+    `,
+    };
+
+    return new Promise((resolve, reject) => {
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          return reject(error);
+        } else {
+          return resolve("Mail sent Successfully");
+        }
+      });
+    });
+  }
+  // Create a new user with minimal details
   const newUser = await User.create({
-    fullName,
     email,
-    password,
     role, // Assign the role as provided by the admin
-    mobileNumber,
+    isInvited: true, // Mark as invited
+    status: "PENDING", // Set status to PENDING until registration is completed
   });
+  res.status(201).json(newUser);
 });
