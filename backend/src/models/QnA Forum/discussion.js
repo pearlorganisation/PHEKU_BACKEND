@@ -15,12 +15,12 @@ const discussionSchema = new mongoose.Schema(
       required: true,
     },
     tags: [{ type: mongoose.Schema.Types.ObjectId, ref: "DiscussionTag" }], // User selcted tag while creating discussion
-    votes: [
-      {
-        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        vote: { type: Number, enum: [-1, 1, 0], default: 0 }, // -1 for downvote, 1 for upvote, 0 for no vote
-      },
-    ],
+    // votes: [
+    //   {
+    //     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    //     vote: { type: Number, enum: [-1, 1, 0], default: 0 }, // -1 for downvote, 1 for upvote, 0 for no vote
+    //   },
+    // ],
   },
   { timestamps: true }
 );

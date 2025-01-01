@@ -2,6 +2,7 @@ import express from "express";
 import {
   createUniversity,
   deleteUniversityById,
+  findNearbyUniversities,
   getAllUniversities,
   getUniversityById,
   syncFaculties,
@@ -22,6 +23,7 @@ router
   ) // Multer middleware to handle file uploads
   .get(getAllUniversities); // Admin panel get uni by countryId(course creation). Query params: country(filter), search(searching)
 
+router.route("/nearby").get(findNearbyUniversities); // Need to use fin accomodation details page for showing nearby universities
 router
   .route("/:id")
   .get(getUniversityById)

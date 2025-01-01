@@ -10,30 +10,47 @@ const facultySchema = new mongoose.Schema({
 
 const universitySchema = new mongoose.Schema(
   {
-    // name: { type: String, required: true, unique: true },
-    // slug: { type: String, required: true, unique: true },
-    // overview: { type: String }, // Edditor, frontend will send raw html
-    // highlights: { type: String }, // Edditor
-    // facilities: { type: String }, // Edditor
-    // coverPhoto: { secure_url: { type: String }, public_id: { type: String } },
-    // logo: { secure_url: { type: String }, public_id: { type: String } },
-    country: { type: mongoose.Schema.Types.ObjectId, ref: "Country" }, // Filtering
-    // state: { type: String, required: true },
-    // district: { type: String, required: true },
-    // city: { type: String, required: true },
-    // address: { type: String, required: true },
-    // estdYear: { type: String },
-    // email: { type: String },
-    // location: { type: String, required: true }, // Embeded link of google map location
-    // website: { type: String, required: true },
-    // phone: { type: String },
-    // ranking: { global: Number, national: Number },
-    // totalCourse: { type: Number, default: 0 }, // No need to parse these from string to num
-    // totalRating: { type: Number, default: 0 },
-    // faculties: [facultySchema], // Array of faculty members
+    name: { type: String, required: true, unique: true },
+    slug: { type: String, required: true, unique: true },
+    overview: { type: String, required: true }, // Edditor, frontend will send raw html
+    highlights: { type: String, required: true }, // Edditor
+    facilities: { type: String, required: true }, // Edditor
+    coverPhoto: { secure_url: { type: String }, public_id: { type: String } },
+    logo: { secure_url: { type: String }, public_id: { type: String } },
+    country: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Country",
+      required: true,
+    }, // Filtering
+    state: { type: String, required: true },
+    district: { type: String, required: true },
+    city: { type: String, required: true },
+    address: { type: String, required: true },
+    estdYear: { type: String, required: true },
+    email: { type: String, required: true },
+    location: { type: String, required: true }, // Embeded link of google map location
+    website: { type: String, required: true },
+    phone: { type: String, required: true },
+    ranking: { global: Number, national: Number },
+    totalCourse: { type: Number, default: 0 }, // No need to parse these from string to num
+    totalRating: { type: Number, default: 0 },
+    faculties: [facultySchema], // Array of faculty members
+    universityCoordinates: {
+      type: {
+        type: String,
+        enum: ["Point"], // 'location.type' must be 'Point'
+        required: true,
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: true,
+      },
+    },
   },
   { timestamps: true }
 );
+
+universitySchema.index({ universityCoordinates: "2dsphere" });
 
 // Middleware to update totalUniversities in Country after save
 universitySchema.post("save", async function () {

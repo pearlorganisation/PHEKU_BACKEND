@@ -2,32 +2,20 @@ import mongoose from "mongoose";
 
 const accommodationSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    // type: {
-    //   type: String,
-    //   enum: ["dormitory", "pg"], // Type can be either dormitory or PG
-    //   required: true,
-    // },
-    description: {
-      type: String,
-      required: true,
-    },
+    name: { type: String, required: true, unique: true },
+    slug: { type: String, required: true, unique: true },
+    type: { type: String, enum: ["DORMITORY", "PG"], required: true },
+    description: { type: String, required: true },
     images: [
-      //Empty array if not send data
       {
-        asset_id: { type: String, required: true },
         secure_url: { type: String, required: true },
         public_id: { type: String, required: true },
       },
     ],
     location: {
-      // location must be an object containing below field-> required
       country: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Country",
         required: true,
       },
       state: {
@@ -62,7 +50,12 @@ const accommodationSchema = new mongoose.Schema(
       type: Number,
       required: true, // Current number of available spaces
     },
-    amenities: [{ name: { type: String }, icon: { type: String } }],
+    amenities: [
+      {
+        name: { type: String },
+        icon: { secure_url: String, public_id: String },
+      },
+    ],
     fees: {
       monthly: {
         type: Number,
