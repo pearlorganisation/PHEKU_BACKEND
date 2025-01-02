@@ -4,12 +4,12 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { AVAILABLE_USER_ROLES, USER_ROLES_ENUM } from "../../constants.js";
 
-// Define the User schema
+// Define the User schema- This is the base schema
 const userSchema = new mongoose.Schema(
   {
     fullName: {
       type: String,
-      required: true,
+      // required: true,
       trim: true,
     },
     email: {
@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      // required: true,
     },
     // profilePic: {
     //   type: String,
@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema(
     // },
     mobileNumber: {
       type: String,
-      required: true,
+      // required: true,
     },
     role: {
       type: String,
@@ -42,6 +42,7 @@ const userSchema = new mongoose.Schema(
     },
   },
   { timestamps: true }
+  // { discriminatorKey: "role", collection: "users", timestamps: true }
 );
 
 // Pre-save hook to hash password before saving it to DB

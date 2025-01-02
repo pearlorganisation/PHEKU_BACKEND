@@ -1,4 +1,4 @@
-import { COOKIE_OPTIONS } from "../../constants.js";
+import { AVAILABLE_USER_ROLES, COOKIE_OPTIONS } from "../../constants.js";
 import User from "../models/user.js";
 import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -7,6 +7,7 @@ import bcrypt from "bcrypt";
 import { signUpValidation, updateValidation } from "../utils/Validation.js";
 import { createTransport } from "nodemailer";
 import jwt from "jsonwebtoken";
+import AdministrativeUser from "../models/AdministrativeUser.js";
 
 export const signup = asyncHandler(async (req, res, next) => {
   const { fullName, email, password, mobileNumber, role } = req.body;
@@ -120,67 +121,88 @@ export const logout = asyncHandler(async (req, res, next) => {
 });
 
 // Not done yet
+// export const createUserByAdmin = asyncHandler(async (req, res, next) => {
+//   const {
+//     email,
+//     role,
+//     isInvited, // Admin will provide the role
+//   } = req.body;
+//   console.log(req.body);
+//   // Check if the user already exists
+//   const existingUser = await User.findOne({
+//     email,
+//   });
+
+//   if (existingUser) {
+//     return next(new ApiError("User already exists", 400));
+//   }
+
+//   // if (isInvited) {
+//   //   const token = jwt.sign(
+//   //     { email, role },
+//   //     process.env.JWT_SECRET_KEY, // Secret key
+//   //     { expiresIn: "7d" } // Token valid for 7 days
+//   //   );
+
+//   //   // Create the invitation link
+//   //   const inviteLink = `${process.env.FRONTEND_URL}/signup?token=${token}`;
+//   //   const transporter = createTransport({
+//   //     host: "smtp.gmail.com",
+//   //     port: 465,
+//   //     service: "gmail",
+//   //     auth: {
+//   //       user: process.env.NODEMAILER_EMAIL_USER,
+//   //       pass: process.env.NODEMAILER_EMAIL_PASS,
+//   //     },
+//   //   });
+
+//   //   let mailOptions = {
+//   //     from: process.env.NODEMAILER_MAIL,
+//   //     to: email,
+//   //     subject: "You’re Invited!",
+//   //     html: `
+//   //     <p>You have been invited to join our platform as a <b>${role}</b>.</p>
+//   //     <p>Click <a href="${inviteLink}">here</a> to complete your registration.</p>
+//   //   `,
+//   //   };
+//   //   transporter.sendMail(mailOptions, (error, info) => {
+//   //     if (error) {
+//   //       return reject(error);
+//   //     } else {
+//   //       return resolve("Mail sent Successfully");
+//   //     }
+//   //   });
+//   //   // return new Promise((resolve, reject) => {
+
+//   //   // });
+//   // }
+//   // Create a new user with minimal details
+//   const newUser = await AdministrativeUser.create({
+//     email,
+//     role: "ADMIN", // Assign the role as provided by the admin
+//     isInvited: true, // Mark as invited
+//     status: "PENDING", // Set status to PENDING until registration is completed
+//   });
+//   res.status(201).json(newUser);
+// });
+
 export const createUserByAdmin = asyncHandler(async (req, res, next) => {
-  const {
-    email,
-    role,
-    isInvited, // Admin will provide the role
-  } = req.body;
-
-  // Check if the user already exists
-  const existingUser = await User.findOne({
-    email,
-  });
-
-  if (existingUser) {
-    return next(new ApiError("User already exists", 400));
-  }
-
-  if (isInvited) {
-    const token = jwt.sign(
-      { email, role },
-      process.env.JWT_SECRET_KEY, // Secret key
-      { expiresIn: "7d" } // Token valid for 7 days
-    );
-
-    // Create the invitation link
-    const inviteLink = `${process.env.FRONTEND_URL}/signup?token=${token}`;
-    const transporter = createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      service: "gmail",
-      auth: {
-        user: process.env.NODEMAILER_EMAIL_USER,
-        pass: process.env.NODEMAILER_EMAIL_PASS,
-      },
-    });
-
-    let mailOptions = {
-      from: process.env.NODEMAILER_MAIL,
-      to: email,
-      subject: "You’re Invited!",
-      html: `
-      <p>You have been invited to join our platform as a <b>${role}</b>.</p>
-      <p>Click <a href="${inviteLink}">here</a> to complete your registration.</p>
-    `,
-    };
-
-    return new Promise((resolve, reject) => {
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          return reject(error);
-        } else {
-          return resolve("Mail sent Successfully");
-        }
-      });
+  const { email, role, isInvited } = req.body;
+  console.log(AVAILABLE_USER_ROLES);
+  if (!AVAILABLE_USER_ROLES.includes(role)) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid role: ${role}. Must be one of ${AVAILABLE_USER_ROLES.join(
+        ", "
+      )}`,
     });
   }
-  // Create a new user with minimal details
-  const newUser = await User.create({
+
+  const user = await AdministrativeUser.create({
     email,
-    role, // Assign the role as provided by the admin
-    isInvited: true, // Mark as invited
-    status: "PENDING", // Set status to PENDING until registration is completed
+    role, // Use the role from body
+    isInvited,
   });
-  res.status(201).json(newUser);
+  console.log(user);
+  res.status(201).json(user);
 });
