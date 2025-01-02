@@ -34,7 +34,7 @@ const accommodationSchema = new mongoose.Schema(
         type: {
           type: String,
           enum: ["Point"], // 'location.type' must be 'Point'
-          required: true,
+          default:"Point"
         },
         coordinates: {
           type: [Number], // [longitude, latitude]
