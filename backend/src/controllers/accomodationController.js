@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadFileToCloudinary } from "../configs/cloudinary.js";
+import { paginate } from "../utils/pagination.js";
 
 export const createAccomodation = asyncHandler(async (req, res, next) => {
   const { images, amenities } = req.files;
@@ -61,13 +62,28 @@ export const createAccomodation = asyncHandler(async (req, res, next) => {
 });
 
 export const getAllAccomodation = asyncHandler(async (req, res, next) => {
-  const data = await Accommodation.find();
-  if (data.length === 0) {
-    return next(new ApiError("Unable to get the resources", 400));
+  const page = parseInt(req.query.page || "1");
+  const limit = parseInt(req.query.limit || "10");
+  const { data: accommodation, pagination } = await paginate(
+    Accommodation,
+    page,
+    limit,
+    [{ path: "location.country", select: "name" }]
+  );
+
+  // Check if no universities found
+  if (!accommodation || accommodation.length === 0) {
+    return next(new ApiError("No universities found", 404));
   }
   return res
     .status(200)
-    .json(new ApiResponse("Successfully retrieved the resources", data, 200));
+    .json(
+      new ApiResponse(
+        "Successfully retrieved the resources",
+        accommodation,
+        pagination
+      )
+    );
 });
 
 /** Get a single accomodation */
