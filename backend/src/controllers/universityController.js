@@ -140,7 +140,7 @@ export const updateUniversityById = asyncHandler(async (req, res, next) => {
     ...req.body,
     faculties: req.body.faculties && JSON.parse(req.body.faculties),
     ranking: req.body.ranking && JSON.parse(req.body.ranking),
-    coverPhoto: coverPhotoResponse ? coverPhotoResponse[0] : undefined, //Only update if new cover photo is provided,mongodb ignore null/undefined
+    coverPhoto: coverPhotoResponse ? coverPhotoResponse[0] : undefined, //Only update if new cover photo is provided,mongodb ignore undefined
     logo: logoResponse ? logoResponse[0] : undefined, // Only update if new logo is provided
   };
 

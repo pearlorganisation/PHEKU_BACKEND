@@ -15,8 +15,14 @@ const universitySchema = new mongoose.Schema(
     overview: { type: String, required: true }, // Edditor, frontend will send raw html
     highlights: { type: String, required: true }, // Edditor
     facilities: { type: String, required: true }, // Edditor
-    coverPhoto: { secure_url: { type: String }, public_id: { type: String } },
-    logo: { secure_url: { type: String }, public_id: { type: String } },
+    coverPhoto: {
+      secure_url: { type: String, required: true },
+      public_id: { type: String, required: true },
+    },
+    logo: {
+      secure_url: { type: String, required: true },
+      public_id: { type: String, required: true },
+    },
     country: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Country",

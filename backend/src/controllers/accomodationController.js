@@ -2,7 +2,10 @@ import Accommodation from "../models/accomodation.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { uploadFileToCloudinary } from "../configs/cloudinary.js";
+import {
+  deleteFileFromCloudinary,
+  uploadFileToCloudinary,
+} from "../configs/cloudinary.js";
 import { paginate } from "../utils/pagination.js";
 
 export const createAccomodation = asyncHandler(async (req, res, next) => {
@@ -64,11 +67,26 @@ export const createAccomodation = asyncHandler(async (req, res, next) => {
 export const getAllAccomodation = asyncHandler(async (req, res, next) => {
   const page = parseInt(req.query.page || "1");
   const limit = parseInt(req.query.limit || "10");
+  const { search } = req.query;
+  const filter = {};
+  if (search) {
+    // Case-insensitive search on name and city fields
+    filter.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { slug: { $regex: search, $options: "i" } },
+      { type: { $regex: search, $options: "i" } },
+      { state: { $regex: search, $options: "i" } },
+      { city: { $regex: search, $options: "i" } },
+      { district: { $regex: search, $options: "i" } },
+      { ownerName: { $regex: search, $options: "i" } },
+    ];
+  }
   const { data: accommodation, pagination } = await paginate(
     Accommodation,
     page,
     limit,
-    [{ path: "location.country", select: "name" }]
+    [{ path: "location.country", select: "name" }],
+    filter
   );
 
   // Check if no universities found
@@ -79,80 +97,107 @@ export const getAllAccomodation = asyncHandler(async (req, res, next) => {
     .status(200)
     .json(
       new ApiResponse(
-        "Successfully retrieved the resources",
+        "Accommodations found successfully",
         accommodation,
         pagination
       )
     );
 });
 
-/** Get a single accomodation */
-
 export const getAccomodationById = asyncHandler(async (req, res, next) => {
   const accomodationId = req.params?.id;
-  const data = await Accommodation.findById(accomodationId);
-  if (!data) {
+  const accommodation = await Accommodation.findById(accomodationId);
+  if (!accommodation) {
     return next(new ApiError("Unable to get the data", 400));
   }
   return res
     .status(200)
-    .json(new ApiResponse("Successfully retrieved the data", data, 200));
+    .json(new ApiResponse("Successfully retrieved the data", accommodation));
 });
 
-/** delete a accomodation */
+//Need to add fuctionality to delete the images from cloudinary
 export const deleteAccomodationById = asyncHandler(async (req, res, next) => {
-  const accomodationId = req.params?.id;
-  const data = await Accommodation.findByIdAndDelete(accomodationId);
-  if (!data) {
-    return next(new ApiError("Unable to delete the resource", 400));
+  const deletedAccommodation = await Accommodation.findByIdAndDelete(
+    req.params?.id
+  );
+  if (!deletedAccommodation) {
+    return next(new ApiError("Accommodation not found", 404));
+  }
+  if (deletedAccommodation.images) {
+    await deleteFileFromCloudinary(deletedAccommodation.images);
+  }
+  if (deletedAccommodation.amenities) {
+    await Promise.all(
+      deletedAccommodation.amenities.map(async (amenity) => {
+        await deleteFileFromCloudinary([amenity.icon]);
+      })
+    );
   }
   return res
     .status(200)
-    .json(new ApiResponse("Successfully deleted the resource", null, 200));
+    .json(new ApiResponse("Accommodation deleted successfully"));
 });
 
+//need to add functionality to delete the images from cloudinary and do some modification in the update
 export const updateAccomodationById = asyncHandler(async (req, res, next) => {
-  const id = req.params?.id;
-  const {
-    name,
-    type,
-    location,
-    capacity,
-    availableSpaces,
-    amenities,
-    fees,
-    description,
-    contactInfo,
-    owner,
-  } = req.body;
+  const { id } = req.params;
+  const { images, amenities } = req.files; // req.files= {images: [], amenities: []}
+  const amenitiesNames = req.body.amenitiesNames
+    ? JSON.parse(req.body.amenitiesNames)
+    : [];
 
-  const data = await Accommodation.findByIdAndUpdate(
+  const existingAccommodation = await Accommodation.findById(id);
+  if (!existingAccommodation) {
+    return next(new ApiError("Accommodation not found", 404));
+  }
+  let uploadedImages;
+  if (images) {
+    uploadedImages = await uploadFileToCloudinary(images);
+    if (existingAccommodation.images) {
+      // Delete old images from Cloudinary
+      await deleteFileFromCloudinary(existingAccommodation.images); // images: [{},{}]
+    }
+  }
+  console.log("Uploaded images: ", uploadedImages);
+
+  let uploadedAmenities = [];
+  // Handle amenities upload
+  if (amenities) {
+    // Array of images, if single image come {}, put it in array
+    const amenitiesArray = Array.isArray(amenities) ? amenities : [amenities];
+    const uploadedIcons = await Promise.all(
+      amenitiesArray.map(async (file, index) => {
+        const name = amenitiesNames[index] || `Amenity ${index + 1}`; // Accessing the index of amenitiesNames which is equal to index of amenitiesArray
+        const uploaded = await uploadFileToCloudinary(file); // Assuming uploadFileToCloudinary returns an object
+        return { name, icon: uploaded[0] }; // Return the structured object with [name] and [icon]
+      })
+    );
+    //uploadedIcons:  It contain the [{name: "",icon: ""}, {}]
+    uploadedAmenities.push(...uploadedIcons);
+  }
+  console.log("Uploaded Ameni: ", uploadedAmenities);
+
+  const accommodationData = {
+    ...req.body,
+    location: req.body.location && JSON.parse(req.body.location),
+    fees: req.body.fees && JSON.parse(req.body.fees),
+    contactInfo: req.body.contactInfo && JSON.parse(req.body.contactInfo),
+    images: uploadedImages || undefined,
+    amenities: uploadedAmenities.length > 0 ? uploadedAmenities : undefined, // Only update if new amenities are provided
+  };
+
+  const accommodation = await Accommodation.findByIdAndUpdate(
     id,
+    accommodationData,
     {
-      $set: {
-        name,
-        type,
-        location,
-        capacity,
-        availableSpaces,
-        amenities,
-        "fees.monthly": fees?.monthly,
-        "fees.securityDeposit": fees?.securityDeposit,
-        description,
-        "contactInfo.phone": contactInfo?.phone,
-        "contactInfo.email": contactInfo?.email,
-        "owner.name": owner?.name,
-        "owner.phone": owner?.phone,
-        "owner.email": owner?.email,
-      },
-    },
-    { new: true }
+      new: true,
+    }
   );
 
-  if (!data) {
-    return next(new ApiError("Unable to update the data", 404));
+  if (!accommodation) {
+    return next(new ApiError("Accommodation failed to update", 400));
   }
   return res
     .status(200)
-    .json(new ApiResponse("Successfully update the resource", data, 200));
+    .json(new ApiResponse("Accommodation updated successfully", accommodation));
 });

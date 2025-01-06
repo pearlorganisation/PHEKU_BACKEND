@@ -24,6 +24,12 @@ router
   .route("/:id")
   .get(getAccomodationById)
   .delete(deleteAccomodationById)
-  .patch(updateAccomodationById);
+  .patch(
+    upload.fields([
+      { name: "images", maxCount: 5 },
+      { name: "amenities", maxCount: 10 },
+    ]),
+    updateAccomodationById
+  );
 
 export default router;
