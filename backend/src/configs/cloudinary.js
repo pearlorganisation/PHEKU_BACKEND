@@ -8,7 +8,7 @@ cloudinary.config({
 });
 
 // Function to handle single or multiple file uploads
-export const uploadFileToCloudinary = async (files) => {
+export const uploadFileToCloudinary = async (files, folderName = "default") => {
   // console.log(JSON.stringify(files, null, 2));
   try {
     // Ensure files is always an array for uniform processing
@@ -17,7 +17,7 @@ export const uploadFileToCloudinary = async (files) => {
     // Map each file to the upload function
     const uploadPromises = fileArray.map((file) =>
       cloudinary.uploader.upload(file.path, {
-        folder: "Pheku", // Specify the folder where the file will be stored
+        folder: `Pheku/${folderName}`, // Specify dynamic folder path
       })
     );
 

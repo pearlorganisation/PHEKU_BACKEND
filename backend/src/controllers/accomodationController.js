@@ -10,9 +10,7 @@ import { paginate } from "../utils/pagination.js";
 
 export const createAccomodation = asyncHandler(async (req, res, next) => {
   const { images, amenities } = req.files;
-  // console.log(req.files);
 
-  // Parse JSON fields from req.body if necessary
   const amenitiesNames = req.body.amenitiesNames
     ? JSON.parse(req.body.amenitiesNames)
     : []; //USE []-> amenitiesNamesArray.map() will work without throwing errors
@@ -22,8 +20,10 @@ export const createAccomodation = asyncHandler(async (req, res, next) => {
     ? JSON.parse(req.body.contactInfo)
     : [];
 
-  const uploadedImages = images ? await uploadFileToCloudinary(images) : [];
-  console.log(amenitiesNames);
+  const uploadedImages = images
+    ? await uploadFileToCloudinary(images, "Accommodation/Images")
+    : [];
+  // console.log(amenitiesNames);
 
   // Handle amenities upload
   const uploadedAmenities = [];
@@ -33,8 +33,10 @@ export const createAccomodation = asyncHandler(async (req, res, next) => {
     const uploadedIcons = await Promise.all(
       amenitiesArray.map(async (file, index) => {
         const name = amenitiesNames[index] || `Amenity ${index + 1}`; // Accessing the index of amenitiesNames which is equal to index of amenitiesArray
-        console.log(name);
-        const uploaded = await uploadFileToCloudinary(file); // Assuming uploadFileToCloudinary returns an object
+        const uploaded = await uploadFileToCloudinary(
+          file,
+          "Accommodation/Amenities"
+        ); // Assuming uploadFileToCloudinary returns an object
         return { name, icon: uploaded[0] }; // Return the structured object with [name] and [icon]
       })
     );
@@ -43,7 +45,6 @@ export const createAccomodation = asyncHandler(async (req, res, next) => {
   }
   // console.log(uploadedAmenities);
 
-  // Create accommodation using the parsed data
   const accomodation = await Accommodation.create({
     ...req.body,
     location,
@@ -58,7 +59,7 @@ export const createAccomodation = asyncHandler(async (req, res, next) => {
   }
 
   return res
-    .status(200)
+    .status(201)
     .json(
       new ApiResponse("Created the Accommodation Successfully", accomodation)
     );
@@ -115,7 +116,6 @@ export const getAccomodationById = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse("Successfully retrieved the data", accommodation));
 });
 
-//Need to add fuctionality to delete the images from cloudinary
 export const deleteAccomodationById = asyncHandler(async (req, res, next) => {
   const deletedAccommodation = await Accommodation.findByIdAndDelete(
     req.params?.id
@@ -138,7 +138,6 @@ export const deleteAccomodationById = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse("Accommodation deleted successfully"));
 });
 
-//need to add functionality to delete the images from cloudinary and do some modification in the update
 export const updateAccomodationById = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const { images, amenities } = req.files; // req.files= {images: [], amenities: []}
@@ -152,7 +151,10 @@ export const updateAccomodationById = asyncHandler(async (req, res, next) => {
   }
   let uploadedImages;
   if (images) {
-    uploadedImages = await uploadFileToCloudinary(images);
+    uploadedImages = await uploadFileToCloudinary(
+      images,
+      "Accommodation/Images"
+    );
     if (existingAccommodation.images) {
       // Delete old images from Cloudinary
       await deleteFileFromCloudinary(existingAccommodation.images); // images: [{},{}]
@@ -168,7 +170,10 @@ export const updateAccomodationById = asyncHandler(async (req, res, next) => {
     const uploadedIcons = await Promise.all(
       amenitiesArray.map(async (file, index) => {
         const name = amenitiesNames[index] || `Amenity ${index + 1}`; // Accessing the index of amenitiesNames which is equal to index of amenitiesArray
-        const uploaded = await uploadFileToCloudinary(file); // Assuming uploadFileToCloudinary returns an object
+        const uploaded = await uploadFileToCloudinary(
+          file,
+          "Accommodation/Amenities"
+        ); // Assuming uploadFileToCloudinary returns an object
         return { name, icon: uploaded[0] }; // Return the structured object with [name] and [icon]
       })
     );

@@ -29,7 +29,6 @@ app.set("view engine", "ejs");
 import authRouter from "./src/routes/authRoutes.js";
 import userRouter from "./src/routes/userRoutes.js";
 import universityRouter from "./src/routes/universityRoutes.js";
-
 import courseRouter from "./src/routes/course/courseRoutes.js";
 import jobRouter from "./src/routes/jobRoutes.js";
 import accomodationRouter from "./src/routes/accomodationRoutes.js";

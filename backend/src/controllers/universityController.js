@@ -11,7 +11,6 @@ import { paginate } from "../utils/pagination.js";
 // Create a University
 export const createUniversity = asyncHandler(async (req, res, next) => {
   const { coverPhoto, logo } = req.files; // Handle file uploads {a: [{}], b: [{}]}
-  console.log(req.body);
   let coverPhotoResponse = null;
   let logoResponse = null;
 

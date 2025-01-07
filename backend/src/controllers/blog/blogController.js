@@ -14,7 +14,7 @@ export const createBlog = asyncHandler(async (req, res, next) => {
   const thumbImage = req.file;
   let thumbImageResponse = null;
   if (thumbImage) {
-    thumbImageResponse = await uploadFileToCloudinary(thumbImage); // Res-> [{}]
+    thumbImageResponse = await uploadFileToCloudinary(thumbImage, "Blogs"); // Res-> [{}]
   }
   // Check if category exists
   const categoryExists = await BlogCategory.findById(req.body.category);
@@ -110,7 +110,7 @@ export const updateBlogById = asyncHandler(async (req, res, next) => {
 
   // Delete the old thumbImage from Cloudinary if it exists and a new one is provided
   if (thumbImage) {
-    thumbImageResponse = await uploadFileToCloudinary(thumbImage); // Upload new thumbImage first
+    thumbImageResponse = await uploadFileToCloudinary(thumbImage, "Blogs"); // Upload new thumbImage first
     if (existingBlog.thumbImage) {
       await deleteFileFromCloudinary(existingBlog.thumbImage); // If upload succeeds, delete the old thumbImage
     }
