@@ -13,13 +13,14 @@ import {
   updateUserDetails,
 } from "../controllers/userController.js";
 import { USER_ROLES_ENUM } from "../../constants.js";
+import { upload } from "../middlewares/multerMiddleware.js";
 
 const router = express.Router();
 
 router
   .route("/me")
   .get(authenticateToken, getUserDetails)
-  .patch(updateUserDetails);
+  .patch(upload.single("profilePic"), authenticateToken, updateUserDetails);
 
 // Only(super_admin, admin)
 router

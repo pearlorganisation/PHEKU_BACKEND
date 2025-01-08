@@ -15,10 +15,13 @@ export const createUniversity = asyncHandler(async (req, res, next) => {
   let logoResponse = null;
 
   if (coverPhoto && coverPhoto[0]) {
-    coverPhotoResponse = await uploadFileToCloudinary(coverPhoto[0]);
+    coverPhotoResponse = await uploadFileToCloudinary(
+      coverPhoto[0],
+      "University/CoverPhotos"
+    );
   }
   if (logo && logo[0]) {
-    logoResponse = await uploadFileToCloudinary(logo[0]);
+    logoResponse = await uploadFileToCloudinary(logo[0], "University/Logos");
   }
 
   const university = await University.create({
@@ -120,7 +123,10 @@ export const updateUniversityById = asyncHandler(async (req, res, next) => {
 
   // Delete the old cover photo from Cloudinary if it exists and a new one is provided
   if (coverPhoto && coverPhoto[0]) {
-    coverPhotoResponse = await uploadFileToCloudinary(coverPhoto[0]);
+    coverPhotoResponse = await uploadFileToCloudinary(
+      coverPhoto[0],
+      "University/CoverPhotos"
+    );
     if (existingUniversity.coverPhoto) {
       await deleteFileFromCloudinary(existingUniversity.coverPhoto); // Delete old cover photo
     }
@@ -128,7 +134,7 @@ export const updateUniversityById = asyncHandler(async (req, res, next) => {
 
   // Delete the old logo from Cloudinary if it exists and a new one is provided
   if (logo && logo[0]) {
-    logoResponse = await uploadFileToCloudinary(logo[0]);
+    logoResponse = await uploadFileToCloudinary(logo[0], "University/Logos");
     if (existingUniversity.logo) {
       await deleteFileFromCloudinary(existingUniversity.logo); // Delete old logo
     }

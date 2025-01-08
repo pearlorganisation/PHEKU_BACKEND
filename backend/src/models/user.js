@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema(
   {
     fullName: {
       type: String,
-      // required: true,
+      required: true,
       trim: true,
     },
     email: {
@@ -24,13 +24,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       // required: true,
     },
-    // profilePic: {
-    //   type: String,
-    //   default: null,
-    // },
+    profilePic: {
+      type: {
+        secure_url: { type: String },
+        public_id: { type: String },
+      },
+      default: null,
+    },
     mobileNumber: {
       type: String,
-      // required: true,
+      required: true,
     },
     role: {
       type: String,
@@ -42,7 +45,6 @@ const userSchema = new mongoose.Schema(
     },
   },
   { timestamps: true }
-  // { discriminatorKey: "role", collection: "users", timestamps: true }
 );
 
 // Pre-save hook to hash password before saving it to DB

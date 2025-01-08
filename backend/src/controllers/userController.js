@@ -6,6 +6,7 @@ import { sendMail } from "../utils/nodemailerConfig.js";
 import jwt from "jsonwebtoken";
 import ejs from "ejs";
 import { filePath } from "../utils/ejsFilepathHelper.js";
+import { uploadFileToCloudinary } from "../configs/cloudinary.js";
 
 export const getUserDetails = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user?._id).select(
@@ -28,10 +29,12 @@ export const updateUserDetails = asyncHandler(async (req, res, next) => {
     return next(new ApiError("User not found", 404));
   }
   const profilePic = req?.file;
+  console.log(req.file);
   let response = [];
   if (profilePic) {
-    response = await uploadFileToCloudinary(profilePic);
+    response = await uploadFileToCloudinary(profilePic, "Profiles");
   }
+  console.log(response);
   const existingUser = await User.findByIdAndUpdate(
     req.user?._id,
     {
