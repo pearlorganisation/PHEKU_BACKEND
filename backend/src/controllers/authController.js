@@ -3,10 +3,7 @@ import User from "../models/user.js";
 import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import bcrypt from "bcrypt";
 import { signUpValidation, updateValidation } from "../utils/Validation.js";
-import { createTransport } from "nodemailer";
-import jwt from "jsonwebtoken";
 import AdministrativeUser from "../models/AdministrativeUser.js";
 
 export const signup = asyncHandler(async (req, res, next) => {

@@ -31,3 +31,17 @@ export const createContact = asyncHandler(async (req, res, next) => {
     .status(200)
     .json(new ApiResponse("Submitted the Contact", createdContact, 200));
 });
+
+export const deleteContactById = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+
+  // Find and delete the contact by ID
+  const deletedContact = await Contact.findByIdAndDelete(id);
+
+  // If the contact is not found
+  if (!deletedContact || deletedContact.length === 0) {
+    return next(new ApiError("Contact not found", 404));
+  }
+
+  return res.status(200).json(new ApiResponse("Contact deleted"));
+});
