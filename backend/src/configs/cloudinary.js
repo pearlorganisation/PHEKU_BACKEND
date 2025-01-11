@@ -9,7 +9,6 @@ cloudinary.config({
 
 // Function to handle single or multiple file uploads
 export const uploadFileToCloudinary = async (files, folderName = "default") => {
-  // console.log(JSON.stringify(files, null, 2));
   try {
     // Ensure files is always an array for uniform processing
     const fileArray = Array.isArray(files) ? files : [files];

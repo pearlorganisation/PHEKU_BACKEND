@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import { validContact } from "../utils/Validation.js";
+import { paginate } from "../utils/pagination.js";
 
 export const createContact = asyncHandler(async (req, res, next) => {
   const { name, email, subject, mobile, message } = req.body;
@@ -30,6 +31,20 @@ export const createContact = asyncHandler(async (req, res, next) => {
   res
     .status(200)
     .json(new ApiResponse("Submitted the Contact", createdContact, 200));
+});
+
+export const getAllContacts = asyncHandler(async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const { data: contacts, pagination } = await paginate(Contact, page, limit);
+  if (!contacts || contacts.length === 0) {
+    return next(new ApiError("No contacts found", 404));
+  }
+  res
+    .status(200)
+    .json(
+      new ApiResponse("All Contacts founds successfully", contacts, pagination)
+    );
 });
 
 export const deleteContactById = asyncHandler(async (req, res, next) => {
