@@ -111,7 +111,7 @@ export const forgotPassword = asyncHandler(async (req, res, next) => {
     expiresIn: "1h",
   });
   // Construct reset URL
-  const resetLink = `http://your-app-url/reset-password/${resetToken}`;
+  const resetLink = `${process.env.FRONTEND_RESET_PASSWORD_PAG}/${resetToken}`;
 
   // html content that will be sent via email
   const htmlContent = await ejs.renderFile(filePath, { resetLink });

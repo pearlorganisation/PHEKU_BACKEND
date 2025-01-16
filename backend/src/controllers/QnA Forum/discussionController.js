@@ -1,8 +1,10 @@
+import mongoose from "mongoose";
 import Discussion from "../../models/QnA Forum/discussion.js";
 import Vote from "../../models/QnA Forum/vote.js";
 import ApiError from "../../utils/ApiError.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
+import Reply from "../../models/QnA Forum/reply.js";
 
 export const createDiscussion = asyncHandler(async (req, res, next) => {
   const { title, content, category, tags } = req.body; // take user from token
@@ -131,15 +133,73 @@ export const voteDiscussion = asyncHandler(async (req, res, next) => {
   });
 });
 
-// // getting status for particular discussion->  API not tested yet
-// export const getVoteStatus = asyncHandler(async (req, res, next) => {
-//   const { id } = req.params; // Discussion ID
-//   const userId = req.user.id; // User ID from token
+// getting status for particular discussion->  API not tested yet
+export const getVoteStatus = asyncHandler(async (req, res, next) => {
+  const { id } = req.params; // Discussion ID
+  const userId = req.user.id; // User ID from token
 
-//   const userVote = await Vote.findOne({ userId, discussionId: id }).then(
-//     (vote) => vote?.vote || 0
-//   );
-//   const upvotesCount = await Vote.countDocuments({ discussionId: id, vote: 1 });
+  const userVote = await Vote.findOne({ userId, discussionId: id }).then(
+    (vote) => vote?.vote || 0
+  );
+  const upvotesCount = await Vote.countDocuments({ discussionId: id, vote: 1 });
 
-//   return res.status(200).json({ userVote, upvotesCount });
-// });
+  return res.status(200).json({ userVote, upvotesCount });
+});
+
+// Get all discussion with total upvotes nad total comments | 🔴 get user vote status, pagination 
+export const getAllDiscussions = asyncHandler(async (req, res, next) => {
+  // Fetch all discussions
+  const discussions = await Discussion.find({});
+
+  // Fetch total upvotes for each discussion
+  const upvotes = await Vote.aggregate([
+    {
+      $match: {
+        // Match votes related to the specific discussion (assuming `discussion` is the discussion ID)
+        discussion: { $in: discussions.map((d) => d._id) },
+        vote: 1, // Assuming `voteType` is the field that distinguishes upvotes
+      },
+    },
+    {
+      $group: {
+        _id: "$discussion",
+        totalUpvotes: { $sum: 1 }, // Count upvotes per discussion
+      },
+    },
+  ]);
+  // Fetch total comments for each discussion
+  const reply = await Reply.aggregate([
+    {
+      $match: {
+        discussion: { $in: discussions.map((d) => d._id) }, // Match comments related to the discussions
+      },
+    },
+    {
+      $group: {
+        _id: "$discussion",
+        totalComments: { $sum: 1 }, // Count comments per discussion
+      },
+    },
+  ]);
+  // Merge total upvotes and total comments with discussions
+  const discussionsWithUpvotesAndComments = discussions.map((discussion) => {
+    const upvoteData = upvotes.find(
+      (upvote) => upvote._id.toString() === discussion._id.toString()
+    );
+    const replyData = reply.find(
+      (Reply) => Reply._id.toString() === discussion._id.toString()
+    );
+
+    return {
+      ...discussion.toObject(),
+      totalUpvotes: upvoteData ? upvoteData.totalUpvotes : 0,
+      totalComments: replyData ? replyData.totalComments : 0,
+    };
+  });
+
+  // Send response with discussions, total upvotes, and total comments
+  return res.status(200).json({
+    message: "Discussions fetched successfully",
+    data: discussionsWithUpvotesAndComments,
+  });
+});
