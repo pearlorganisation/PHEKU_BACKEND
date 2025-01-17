@@ -111,8 +111,8 @@ export const logout = asyncHandler(async (req, res, next) => {
     { new: true }
   );
   res
-    .cookie("access-token", "", { ...COOKIE_OPTIONS, maxAge: 0 })
-    .cookie("refresh-token", "", { ...COOKIE_OPTIONS, maxAge: 0 })
+    .cookie("access_token", "", { ...COOKIE_OPTIONS, maxAge: 0 })
+    .cookie("refresh_token", "", { ...COOKIE_OPTIONS, maxAge: 0 })
     .status(200)
     .json(new ApiResponse("Logout successfully"));
 });

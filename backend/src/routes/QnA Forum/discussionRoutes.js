@@ -5,7 +5,7 @@ import {
   getVoteStatus,
   voteDiscussion,
 } from "../../controllers/QnA Forum/discussionController.js";
-import { authenticateToken } from "../../middlewares/authMiddleware.js";
+import { authenticateToken, optionalAuthenticateToken } from "../../middlewares/authMiddleware.js";
 import {
   addReply,
   deleteReplyById,
@@ -18,7 +18,7 @@ const router = express.Router();
 router
   .route("/")
   .post(authenticateToken, createDiscussion)
-  .get(authenticateToken, getAllDiscussions);
+  .get(optionalAuthenticateToken, getAllDiscussions);
 router.route("/:id/vote").patch(authenticateToken, voteDiscussion); // separae schema for voting
 router.route("/:id/vote-status").get(authenticateToken, getVoteStatus);
 router

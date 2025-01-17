@@ -146,7 +146,7 @@ export const getVoteStatus = asyncHandler(async (req, res, next) => {
   return res.status(200).json({ userVote, upvotesCount });
 });
 
-// Get all discussion with total upvotes nad total comments | 🔴 get user vote status, pagination 
+// Get all discussion with total upvotes nad total comments | 🔴 pagination is left
 export const getAllDiscussions = asyncHandler(async (req, res, next) => {
   // Fetch all discussions
   const discussions = await Discussion.find({});
@@ -157,7 +157,7 @@ export const getAllDiscussions = asyncHandler(async (req, res, next) => {
       $match: {
         // Match votes related to the specific discussion (assuming `discussion` is the discussion ID)
         discussion: { $in: discussions.map((d) => d._id) },
-        vote: 1, // Assuming `voteType` is the field that distinguishes upvotes
+        vote: 1, 
       },
     },
     {
@@ -181,25 +181,37 @@ export const getAllDiscussions = asyncHandler(async (req, res, next) => {
       },
     },
   ]);
+  console.log(reply);
+  let userVotes = [];
+  if (req.user) {
+    userVotes = await Vote.find({
+      user: req.user._id,
+      discussion: { $in: discussions.map((d) => d._id) },
+    });
+  }
+
   // Merge total upvotes and total comments with discussions
-  const discussionsWithUpvotesAndComments = discussions.map((discussion) => {
+  const discussionsWithDetails = discussions.map((discussion) => {
     const upvoteData = upvotes.find(
       (upvote) => upvote._id.toString() === discussion._id.toString()
     );
     const replyData = reply.find(
       (Reply) => Reply._id.toString() === discussion._id.toString()
     );
-
+    const userVote = userVotes.find(
+      (vote) => vote.discussion.toString() === discussion._id.toString()
+    );
     return {
       ...discussion.toObject(),
       totalUpvotes: upvoteData ? upvoteData.totalUpvotes : 0,
       totalComments: replyData ? replyData.totalComments : 0,
+      userVote: userVote ? userVote.vote : 0,
     };
   });
 
   // Send response with discussions, total upvotes, and total comments
   return res.status(200).json({
     message: "Discussions fetched successfully",
-    data: discussionsWithUpvotesAndComments,
+    data: discussionsWithDetails,
   });
 });

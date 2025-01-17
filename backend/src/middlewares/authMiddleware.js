@@ -3,6 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 
+//Strict Authentication: For routes where authentication is mandatory
 export const authenticateToken = asyncHandler(async (req, res, next) => {
   const token =
     req.cookies?.access_token ||
@@ -21,6 +22,42 @@ export const authenticateToken = asyncHandler(async (req, res, next) => {
   next();
 });
 
+//Optional Authentication: For routes where authentication is not mandatory. For routes that must work for both logged-in and logged-out users.
+export const optionalAuthenticateToken = asyncHandler(
+  async (req, res, next) => {
+    const token =
+      req.cookies?.access_token ||
+      req.header("Authorization")?.replace("Bearer ", "");
+
+    if (!token) {
+      // No token provided, proceed as an unauthenticated user
+      req.user = null;
+      return next();
+    }
+
+    try {
+      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+      const user = await User.findById(decoded._id).select(
+        "-password -refreshToken"
+      );
+
+      if (!user) {
+        // Invalid user associated with the token
+        req.user = null;
+        return next();
+      }
+
+      // Valid token and user found
+      req.user = user;
+      next();
+    } catch (err) {
+      // Token verification failed, proceed as an unauthenticated user
+      req.user = null;
+      next();
+    }
+  }
+);
+
 export const verifyPermission = (roles = []) =>
   asyncHandler(async (req, res, next) => {
     if (!req.user?._id) {
@@ -32,3 +69,10 @@ export const verifyPermission = (roles = []) =>
       return next(new ApiError("Access denied", 403));
     }
   });
+
+// The two middlewares serve distinct purposes:
+// -authenticateToken ensures only authenticated users can access the route.
+// -optionalAuthenticateToken allows both authenticated and unauthenticated access, enabling more flexible functionality.
+
+// Use authenticateToken for [ protected actions ].
+// Use optionalAuthenticateToken for [ public actions ].
