@@ -2,10 +2,13 @@ import express from "express";
 import {
   createDiscussion,
   getAllDiscussions,
-  getVoteStatus,
+  getDiscussionById,
   voteDiscussion,
 } from "../../controllers/QnA Forum/discussionController.js";
-import { authenticateToken, optionalAuthenticateToken } from "../../middlewares/authMiddleware.js";
+import {
+  authenticateToken,
+  optionalAuthenticateToken,
+} from "../../middlewares/authMiddleware.js";
 import {
   addReply,
   deleteReplyById,
@@ -19,10 +22,10 @@ router
   .route("/")
   .post(authenticateToken, createDiscussion)
   .get(optionalAuthenticateToken, getAllDiscussions);
-router.route("/:id/vote").patch(authenticateToken, voteDiscussion); // separae schema for voting
-router.route("/:id/vote-status").get(authenticateToken, getVoteStatus);
+router.route("/:id").get(optionalAuthenticateToken, getDiscussionById);
+router.route("/:id/vote").patch(authenticateToken, voteDiscussion);
 router
-  .route("/:discussionId/reply")
+  .route("/:discussionId/replies")
   .post(authenticateToken, addReply)
   .get(getAllReplyForDiscussion);
 

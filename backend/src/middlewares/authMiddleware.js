@@ -22,7 +22,7 @@ export const authenticateToken = asyncHandler(async (req, res, next) => {
   next();
 });
 
-//Optional Authentication: For routes where authentication is not mandatory. For routes that must work for both logged-in and logged-out users.
+//Optional Authentication: For routes where authentication is not mandatory. For routes that must work for both logged-in and logged-out users. [main use is that logged out user also get access to the route without authentication, for logged in user we can show ui changes for votes ]
 export const optionalAuthenticateToken = asyncHandler(
   async (req, res, next) => {
     const token =

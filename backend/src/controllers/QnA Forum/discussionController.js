@@ -29,60 +29,6 @@ export const createDiscussion = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse("Discussion created successfully", discussion));
 });
 
-// export const voteDiscussion = asyncHandler(async (req, res, next) => {
-//   const { id } = req.params;
-//   const { vote } = req.body; // expect vote to be either 1 (upvote), -1 (downvote), or 0 (remove vote)
-//   const userId = req.user.id; // Assuming user ID is available from the token
-
-//   // Validate vote
-//   if (![1, -1, 0].includes(vote)) {
-//     return next(
-//       new ApiError(
-//         "Vote must be 1 (upvote), -1 (downvote), or 0 (remove vote).",
-//         400
-//       )
-//     );
-//   }
-
-//   // Find the discussion
-//   const discussion = await Discussion.findById(id);
-//   if (!discussion) {
-//     return next(new ApiError("Discussion not found.", 404));
-//   }
-
-//   // Check if the user has already voted
-//   const existingVote = discussion.votes.find(
-//     (v) => v.userId.toString() === userId
-//   );
-
-//   if (existingVote) {
-//     if (vote === 0) {
-//       // Remove the vote if vote is 0
-//       discussion.votes = discussion.votes.filter(
-//         (v) => v.userId.toString() !== userId
-//       );
-//     } else {
-//       // Update the existing vote
-//       existingVote.vote = vote;
-//     }
-//   } else {
-//     // Add new vote
-//     discussion.votes.push({ userId, vote });
-//   }
-
-//   // Save the discussion with the updated votes
-//   await discussion.save();
-
-//   // Calculate only upvotes
-//   const upvotes = discussion.votes.filter((v) => v.vote === 1).length;
-
-//   // Return success response
-//   return res.status(200).json({
-//     message: "Vote updated successfully.",
-//     userVote: vote, // for ui to update the vote button
-//     upvotes,
-//   });
-// });
 export const voteDiscussion = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const { vote } = req.body; // expect vote to be either 1 (upvote), -1 (downvote), or 0 (remove vote)
@@ -133,18 +79,12 @@ export const voteDiscussion = asyncHandler(async (req, res, next) => {
   });
 });
 
-// getting status for particular discussion->  API not tested yet
-export const getVoteStatus = asyncHandler(async (req, res, next) => {
-  const { id } = req.params; // Discussion ID
-  const userId = req.user.id; // User ID from token
-
-  const userVote = await Vote.findOne({ userId, discussionId: id }).then(
-    (vote) => vote?.vote || 0
-  );
-  const upvotesCount = await Vote.countDocuments({ discussionId: id, vote: 1 });
-
-  return res.status(200).json({ userVote, upvotesCount });
-});
+// // getting status for particular discussion->  API not tested yet
+// export const getVoteStatus = asyncHandler(async (req, res, next) => {
+//   const { id } = req.params; // Discussion ID
+//   const userId = req.user.id; // User ID from token
+//   return res.status(200).json({ userVote, upvotesCount });
+// });
 
 // Get all discussion with total upvotes nad total comments | 🔴 pagination is left
 export const getAllDiscussions = asyncHandler(async (req, res, next) => {
@@ -157,7 +97,7 @@ export const getAllDiscussions = asyncHandler(async (req, res, next) => {
       $match: {
         // Match votes related to the specific discussion (assuming `discussion` is the discussion ID)
         discussion: { $in: discussions.map((d) => d._id) },
-        vote: 1, 
+        vote: 1,
       },
     },
     {
@@ -214,4 +154,74 @@ export const getAllDiscussions = asyncHandler(async (req, res, next) => {
     message: "Discussions fetched successfully",
     data: discussionsWithDetails,
   });
+});
+
+export const getDiscussionById = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+
+  // Fetch the discussion details and populate user details
+  const discussion = await Discussion.findById(id).populate({
+    path: "user",
+    select: "fullName email",
+  });
+
+  if (!discussion) {
+    return next(new ApiError("Discussion not found", 404));
+  }
+
+  // Fetch total upvotes for the discussion
+  const upvoteData = await Vote.aggregate([
+    {
+      $match: {
+        discussion: discussion._id, // Match the specific discussion ID
+        vote: 1, // Count only upvotes
+      },
+    },
+    {
+      $group: {
+        _id: "$discussion",
+        totalUpvotes: { $sum: 1 }, // Count upvotes
+      },
+    },
+  ]);
+
+  // Fetch total comments for the discussion
+  const replyData = await Reply.aggregate([
+    {
+      $match: {
+        discussion: discussion._id, // Match the specific discussion ID
+      },
+    },
+    {
+      $group: {
+        _id: "$discussion",
+        totalComments: { $sum: 1 }, // Count comments
+      },
+    },
+  ]);
+
+  // Fetch the user's vote on the discussion, if the user is authenticated
+  let userVote = null;
+  if (req.user) {
+    const vote = await Vote.findOne({
+      user: req.user._id,
+      discussion: discussion._id,
+    });
+    userVote = vote ? vote.vote : 0;
+  }
+
+  // Add the aggregated details to the discussion object
+  const discussionWithDetails = {
+    ...discussion.toObject(),
+    totalUpvotes: upvoteData.length ? upvoteData[0].totalUpvotes : 0,
+    totalComments: replyData.length ? replyData[0].totalComments : 0,
+    userVote, // User's vote on this discussion
+  };
+
+  // Send the response
+  return res
+    .status(200)
+    .json(
+      new ApiResponse("Discussion fetched successfully", discussionWithDetails)
+    );
 });
