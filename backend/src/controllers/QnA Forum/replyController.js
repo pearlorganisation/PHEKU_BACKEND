@@ -1,5 +1,6 @@
 import Discussion from "../../models/QnA Forum/discussion.js";
 import Reply from "../../models/QnA Forum/reply.js";
+import ReplyVote from "../../models/QnA Forum/replyVote.js";
 import ApiError from "../../utils/ApiError.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
@@ -65,11 +66,10 @@ export const getAllReplyForDiscussion = asyncHandler(async (req, res, next) => {
     reply.children = []; // Initialize the children array for each reply
     replyMap[reply._id] = reply; // Map each reply by its ID
   });
-
   const result = [];
   replies.forEach((reply) => {
     if (reply.parent) {
-      // If the reply has a parent, add it to the parent's children array
+      // If the reply has a parent, add reply to the parent's children array of reply map
       replyMap[reply.parent]?.children.push(reply);
     } else {
       // If the reply has no parent, it's a top-level reply
@@ -129,4 +129,63 @@ export const deleteReplyById = asyncHandler(async (req, res, next) => {
 
   // Return success response
   return res.status(200).json(new ApiResponse("Reply deleted successfully"));
+});
+
+export const voteOnReply = asyncHandler(async (req, res, next) => {
+  const { replyId } = req.params;
+  const { vote } = req.body;
+  const user = req.user._id;
+  // Validate vote
+  if (![1, -1, 0].includes(vote)) {
+    return next(
+      new ApiError(
+        "Vote must be 1 (upvote), -1 (downvote), or 0 (remove vote).",
+        400
+      )
+    );
+  }
+
+  // Find the reply
+  const reply = await Reply.findById(replyId);
+
+  // If reply is not found
+  if (!reply) {
+    return next(new ApiError("Reply not found", 404));
+  }
+
+  // // Check if the logged-in user is the owner of the reply
+  // if (reply.user.toString() === user.toString()) {
+  //   return next(new ApiError("You cannot vote on your own reply", 403));
+  // }
+
+  // Check if the user has already voted on this reply
+  const existingVote = await ReplyVote.findOne({
+    user,
+    reply: replyId,
+  });
+
+  if (existingVote) {
+    if (vote === 0) {
+      await existingVote.deleteOne();
+    } else {
+      // Update the existing vote
+      existingVote.vote = vote;
+      await existingVote.save();
+    }
+  } else {
+    // Create a new vote
+    await ReplyVote.create({
+      user,
+      reply: replyId,
+      vote,
+    });
+  }
+  // Calculate only upvotes
+  const upvotes = await ReplyVote.countDocuments({ reply: replyId, vote: 1 });
+  // Return success response
+  return res
+    .status(200)
+    .json(
+      new ApiResponse("Vote recorded successfully", { userVote: vote, upvotes })
+    );
 });

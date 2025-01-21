@@ -32,7 +32,7 @@ export const createDiscussion = asyncHandler(async (req, res, next) => {
 export const voteDiscussion = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const { vote } = req.body; // expect vote to be either 1 (upvote), -1 (downvote), or 0 (remove vote)
-  const userId = req.user.id; // Assuming user ID is available from the token
+  const user = req.user.id; // Assuming user ID is available from the token
 
   // Validate vote
   if (![1, -1, 0].includes(vote)) {
@@ -51,7 +51,7 @@ export const voteDiscussion = asyncHandler(async (req, res, next) => {
   }
 
   // Check if the user has already voted using the Vote model
-  const existingVote = await Vote.findOne({ user: userId, discussion: id });
+  const existingVote = await Vote.findOne({ user, discussion: id });
 
   if (existingVote) {
     if (vote === 0) {
@@ -65,18 +65,19 @@ export const voteDiscussion = asyncHandler(async (req, res, next) => {
     }
   } else {
     // Add new vote
-    await Vote.create({ user: userId, discussion: id, vote });
+    await Vote.create({ user, discussion: id, vote });
   }
 
   // Calculate only upvotes
   const upvotes = await Vote.countDocuments({ discussion: id, vote: 1 });
 
-  // Return success response
-  return res.status(200).json({
-    message: "Vote updated successfully.",
-    userVote: vote, // for UI to update the vote button instantly when votes discussion api call
-    upvotes, // for UI to update the upvote count
-  });
+  // userVote: for UI to update the vote button instantly when votes discussion api call
+  // upvotes: for UI to update the upvote count
+  return res
+    .status(200)
+    .json(
+      new ApiResponse("Vote recorded successfully", { userVote: vote, upvotes })
+    );
 });
 
 // // getting status for particular discussion->  API not tested yet

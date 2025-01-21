@@ -42,6 +42,7 @@ import roleRouter from "./src/routes/role/roleRoutes.js";
 import discussionRouter from "./src/routes/QnA Forum/discussionRoutes.js";
 import discussionCategoryRouter from "./src/routes/QnA Forum/discussionCategoryRoutes.js";
 import discussionTagRouter from "./src/routes/QnA Forum/discussionTagRoutes.js";
+import replyRouter from "./src/routes/QnA Forum/replyRoutes.js";
 
 app.get("/", (req, res) => {
   res.status(200).send("APIs are working...");
@@ -65,6 +66,7 @@ app.use("/api/v1/roles", roleRouter);
 app.use("/api/v1/discussions", discussionRouter);
 app.use("/api/v1/discussions/categories", discussionCategoryRouter);
 app.use("/api/v1/discussions/tags", discussionTagRouter);
+app.use("/api/v1/replies", replyRouter);
 
 app.use(errorHandler);
 
