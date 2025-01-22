@@ -42,6 +42,46 @@ export const addReply = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse("Reply added successfully", reply));
 });
 
+// export const getAllReplyForDiscussion = asyncHandler(async (req, res, next) => {
+//   const { discussionId } = req.params;
+
+//   // Validate discussion existence
+//   const discussionExists = await Discussion.findById(discussionId);
+//   if (!discussionExists) {
+//     return next(new ApiError("Discussion not found", 404));
+//   }
+
+//   // Fetch all replies for the discussion
+//   const replies = await Reply.find({ discussion: discussionId })
+//     .populate("user", "fullName email")
+//     .lean(); // Use `lean` for better performance when manipulating data
+
+//   if (!replies || replies.length === 0) {
+//     return next(new ApiError("No replies found for this discussion", 404));
+//   }
+
+//   // Build the parent-children hierarchy
+//   const replyMap = {};
+//   replies.forEach((reply) => {
+//     reply.children = []; // Initialize the children array for each reply
+//     replyMap[reply._id] = reply; // Map each reply by its ID
+//   });
+//   const result = [];
+//   replies.forEach((reply) => {
+//     if (reply.parent) {
+//       // If the reply has a parent, add reply to the parent's children array of reply map
+//       replyMap[reply.parent]?.children.push(reply);
+//     } else {
+//       // If the reply has no parent, it's a top-level reply
+//       result.push(reply);
+//     }
+//   });
+
+//   // Return the hierarchical response
+//   return res
+//     .status(200)
+//     .json(new ApiResponse("Replies fetched successfully", result));
+// });
 export const getAllReplyForDiscussion = asyncHandler(async (req, res, next) => {
   const { discussionId } = req.params;
 
@@ -54,25 +94,66 @@ export const getAllReplyForDiscussion = asyncHandler(async (req, res, next) => {
   // Fetch all replies for the discussion
   const replies = await Reply.find({ discussion: discussionId })
     .populate("user", "fullName email")
-    .lean(); // Use `lean` for better performance when manipulating data
+    .lean();
 
   if (!replies || replies.length === 0) {
     return next(new ApiError("No replies found for this discussion", 404));
   }
 
+  // Fetch votes for all replies
+  const replyIds = replies.map((reply) => reply._id);
+
+  const votes = await ReplyVote.aggregate([
+    { $match: { reply: { $in: replyIds } } },
+    {
+      $group: {
+        _id: "$reply",
+        totalUpvotes: { $sum: { $cond: [{ $eq: ["$vote", 1] }, 1, 0] } },
+        // totalDownvotes: { $sum: { $cond: [{ $eq: ["$vote", -1] }, 1, 0] } },
+      },
+    },
+  ]);
+  // console.log("---- ", votes);
+  const voteMap = votes.reduce((acc, vote) => {
+    acc[vote._id] = vote;
+    return acc;
+  }, {});
+  console.log("---- ", voteMap);
+  // Fetch user votes if authenticated
+  const userVotes = req.user
+    ? await ReplyVote.find({
+        reply: { $in: replyIds },
+        user: req.user._id,
+      }).lean()
+    : [];
+  const userVoteMap = userVotes.reduce((acc, vote) => {
+    acc[vote.reply] = vote.vote;
+    return acc;
+  }, {});
+
   // Build the parent-children hierarchy
   const replyMap = {};
   replies.forEach((reply) => {
-    reply.children = []; // Initialize the children array for each reply
+    reply.children = [];
+    const replyVotes = voteMap[reply._id] || {
+      totalUpvotes: 0,
+      totalDownvotes: 0,
+    };
+    reply.totalUpvotes = replyVotes.totalUpvotes;
+    // reply.totalDownvotes = replyVotes.totalDownvotes;
+    reply.userVote = userVoteMap[reply._id] || 0;
     replyMap[reply._id] = reply; // Map each reply by its ID
   });
+
   const result = [];
   replies.forEach((reply) => {
     if (reply.parent) {
-      // If the reply has a parent, add reply to the parent's children array of reply map
-      replyMap[reply.parent]?.children.push(reply);
+      // Add reply to the parent's children array if parent exists
+      if (replyMap[reply.parent]) {
+        replyMap[reply.parent].children.push(reply);
+      }
     } else {
-      // If the reply has no parent, it's a top-level reply
+      // If no parent, it's a top-level reply
       result.push(reply);
     }
   });

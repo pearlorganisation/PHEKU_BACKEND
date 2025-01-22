@@ -27,7 +27,7 @@ router.route("/:id/vote").patch(authenticateToken, voteDiscussion);
 router
   .route("/:discussionId/replies")
   .post(authenticateToken, addReply)
-  .get(getAllReplyForDiscussion);
+  .get(optionalAuthenticateToken, getAllReplyForDiscussion);
 
 router
   .route("/reply/:replyId")
