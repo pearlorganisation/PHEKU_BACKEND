@@ -29,11 +29,6 @@ router
   .post(authenticateToken, addReply)
   .get(optionalAuthenticateToken, getAllReplyForDiscussion);
 
-router
-  .route("/reply/:replyId")
-  .patch(authenticateToken, updateReplyById)
-  .delete(authenticateToken, deleteReplyById);
-
 //Vote on reply
 
 export default router;

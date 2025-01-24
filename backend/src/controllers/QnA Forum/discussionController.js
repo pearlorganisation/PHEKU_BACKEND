@@ -69,23 +69,17 @@ export const voteDiscussion = asyncHandler(async (req, res, next) => {
   }
 
   // Calculate only upvotes
-  const upvotes = await Vote.countDocuments({ discussion: id, vote: 1 });
+  const totalUpvotes = await Vote.countDocuments({ discussion: id, vote: 1 });
 
   // userVote: for UI to update the vote button instantly when votes discussion api call
   // upvotes: for UI to update the upvote count
-  return res
-    .status(200)
-    .json(
-      new ApiResponse("Vote recorded successfully", { userVote: vote, upvotes })
-    );
+  return res.status(200).json(
+    new ApiResponse("Vote recorded successfully", {
+      userVote: vote,
+      totalUpvotes,
+    })
+  );
 });
-
-// // getting status for particular discussion->  API not tested yet
-// export const getVoteStatus = asyncHandler(async (req, res, next) => {
-//   const { id } = req.params; // Discussion ID
-//   const userId = req.user.id; // User ID from token
-//   return res.status(200).json({ userVote, upvotesCount });
-// });
 
 // Get all discussion with total upvotes nad total comments | 🔴 pagination is left
 export const getAllDiscussions = asyncHandler(async (req, res, next) => {

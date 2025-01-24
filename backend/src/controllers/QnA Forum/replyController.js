@@ -113,7 +113,7 @@ export const getAllReplyForDiscussion = asyncHandler(async (req, res, next) => {
       },
     },
   ]);
-  // console.log("---- ", votes);
+  console.log("---- ", votes);
   const voteMap = votes.reduce((acc, vote) => {
     acc[vote._id] = vote;
     return acc;
@@ -262,11 +262,17 @@ export const voteOnReply = asyncHandler(async (req, res, next) => {
     });
   }
   // Calculate only upvotes
-  const upvotes = await ReplyVote.countDocuments({ reply: replyId, vote: 1 });
+  const totalUpvotes = await ReplyVote.countDocuments({
+    reply: replyId,
+    vote: 1,
+  });
   // Return success response
   return res
     .status(200)
     .json(
-      new ApiResponse("Vote recorded successfully", { userVote: vote, upvotes })
+      new ApiResponse("Vote recorded successfully", {
+        userVote: vote,
+        totalUpvotes,
+      })
     );
 });
