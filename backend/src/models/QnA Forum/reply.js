@@ -18,6 +18,11 @@ const replySchema = new mongoose.Schema(
       ref: "Discussion",
       required: true,
     }, // Reference to discussion
+    isDeleted: { type: Boolean, default: false },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );

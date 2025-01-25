@@ -7,7 +7,7 @@ import { asyncHandler } from "../../utils/asyncHandler.js";
 
 export const addReply = asyncHandler(async (req, res, next) => {
   const { discussionId } = req.params;
-  const { text, parent } = req.body;
+  const { text, parent, isDeleted } = req.body;
 
   // Validate discussion existence
   const discussionExists = await Discussion.findById(discussionId);
@@ -29,6 +29,7 @@ export const addReply = asyncHandler(async (req, res, next) => {
     user: req.user._id,
     parent: parent || null,
     discussion: discussionId,
+    isDeleted,
   });
 
   // If creation fails
@@ -42,46 +43,6 @@ export const addReply = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse("Reply added successfully", reply));
 });
 
-// export const getAllReplyForDiscussion = asyncHandler(async (req, res, next) => {
-//   const { discussionId } = req.params;
-
-//   // Validate discussion existence
-//   const discussionExists = await Discussion.findById(discussionId);
-//   if (!discussionExists) {
-//     return next(new ApiError("Discussion not found", 404));
-//   }
-
-//   // Fetch all replies for the discussion
-//   const replies = await Reply.find({ discussion: discussionId })
-//     .populate("user", "fullName email")
-//     .lean(); // Use `lean` for better performance when manipulating data
-
-//   if (!replies || replies.length === 0) {
-//     return next(new ApiError("No replies found for this discussion", 404));
-//   }
-
-//   // Build the parent-children hierarchy
-//   const replyMap = {};
-//   replies.forEach((reply) => {
-//     reply.children = []; // Initialize the children array for each reply
-//     replyMap[reply._id] = reply; // Map each reply by its ID
-//   });
-//   const result = [];
-//   replies.forEach((reply) => {
-//     if (reply.parent) {
-//       // If the reply has a parent, add reply to the parent's children array of reply map
-//       replyMap[reply.parent]?.children.push(reply);
-//     } else {
-//       // If the reply has no parent, it's a top-level reply
-//       result.push(reply);
-//     }
-//   });
-
-//   // Return the hierarchical response
-//   return res
-//     .status(200)
-//     .json(new ApiResponse("Replies fetched successfully", result));
-// });
 export const getAllReplyForDiscussion = asyncHandler(async (req, res, next) => {
   const { discussionId } = req.params;
 
@@ -163,6 +124,88 @@ export const getAllReplyForDiscussion = asyncHandler(async (req, res, next) => {
     .status(200)
     .json(new ApiResponse("Replies fetched successfully", result));
 });
+// export const getAllReplyForDiscussion = asyncHandler(async (req, res, next) => {
+//   const { discussionId } = req.params;
+
+//   // Validate discussion existence
+//   const discussionExists = await Discussion.findById(discussionId);
+//   if (!discussionExists) {
+//     return next(new ApiError("Discussion not found", 404));
+//   }
+
+//   // Pagination support
+//   const { page = 1, limit = 10 } = req.query;
+//   const skip = (page - 1) * limit;
+
+//   // Fetch all replies for the discussion, including soft-deleted ones
+//   const replies = await Reply.find({ discussion: discussionId })
+//     .populate("user", "fullName email")
+//     .skip(skip)
+//     .limit(limit)
+//     .lean();
+
+//   if (!replies || replies.length === 0) {
+//     return next(new ApiError("No replies found for this discussion", 404));
+//   }
+
+//   // Fetch votes for all replies
+//   const replyIds = replies.map((reply) => reply._id);
+
+//   const votes = await ReplyVote.aggregate([
+//     { $match: { reply: { $in: replyIds } } },
+//     {
+//       $group: {
+//         _id: "$reply",
+//         totalUpvotes: { $sum: { $cond: [{ $eq: ["$vote", 1] }, 1, 0] } },
+//       },
+//     },
+//   ]);
+
+//   const voteMap = votes.reduce((acc, vote) => {
+//     acc[vote._id] = vote;
+//     return acc;
+//   }, {});
+
+//   // Fetch user votes if authenticated
+//   const userVotes = req.user
+//     ? await ReplyVote.find({
+//         reply: { $in: replyIds },
+//         user: req.user._id,
+//       }).lean()
+//     : [];
+//   const userVoteMap = userVotes.reduce((acc, vote) => {
+//     acc[vote.reply] = vote.vote;
+//     return acc;
+//   }, {});
+
+//   // Build the parent-children hierarchy and handle soft-deleted replies
+//   const result = [];
+//   const replyMap = {};
+//   replies.forEach((reply) => {
+//     // Handle soft deletion
+//     if (reply.isDeleted) {
+//       reply.content = "[This reply has been deleted]";
+//       reply.user = null; // Hide user details for deleted replies
+//     }
+
+//     reply.children = [];
+//     const replyVotes = voteMap[reply._id] || { totalUpvotes: 0 };
+//     reply.totalUpvotes = replyVotes.totalUpvotes;
+//     reply.userVote = userVoteMap[reply._id] || 0;
+//     replyMap[reply._id] = reply;
+
+//     if (reply.parent) {
+//       replyMap[reply.parent]?.children.push(reply); // Add to parent's children
+//     } else {
+//       result.push(reply); // Top-level replies
+//     }
+//   });
+
+//   // Return the hierarchical response
+//   return res
+//     .status(200)
+//     .json(new ApiResponse("Replies fetched successfully", result));
+// });
 
 export const updateReplyById = asyncHandler(async (req, res, next) => {
   const { replyId } = req.params;
@@ -191,15 +234,46 @@ export const updateReplyById = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse("Reply updated successfully", updatedReply));
 });
 
+// export const deleteReplyById = asyncHandler(async (req, res, next) => {
+//   const { replyId } = req.params;
+
+//   // Attempt to delete the reply with a filter
+//   const result = await Reply.deleteOne({ _id: replyId, user: req.user.id }); // { acknowledged: true, deletedCount: 1 }
+//   console.log(result);
+
+//   if (!result.deletedCount) {
+//     //deletedCount will be 0 if no doc deleted
+//     return next(
+//       new ApiError(
+//         "Reply not found or you are not authorized to delete it",
+//         404
+//       )
+//     );
+//   }
+
+//   // Return success response
+//   return res.status(200).json(new ApiResponse("Reply deleted successfully"));
+// });
 export const deleteReplyById = asyncHandler(async (req, res, next) => {
   const { replyId } = req.params;
 
-  // Attempt to delete the reply with a filter
-  const result = await Reply.deleteOne({ _id: replyId, user: req.user.id }); // { acknowledged: true, deletedCount: 1 }
-  console.log(result);
+  // Attempt to soft delete the reply by setting deletedAt
+  const result = await Reply.findByIdAndUpdate(
+    replyId,
+    {
+      $set: {
+        isDeleted: true,
+        deletedAt: new Date(), // Optional, to track when it was deleted
+      },
+    },
+    {
+      new: true, // Returns the updated document
+      runValidators: true, // Ensures validation rules are applied
+    }
+  );
 
-  if (!result.deletedCount) {
-    //deletedCount will be 0 if no doc deleted
+  // Check if the reply was found and updated
+  if (!result || result.user.toString() !== req.user.id) {
     return next(
       new ApiError(
         "Reply not found or you are not authorized to delete it",
@@ -209,7 +283,9 @@ export const deleteReplyById = asyncHandler(async (req, res, next) => {
   }
 
   // Return success response
-  return res.status(200).json(new ApiResponse("Reply deleted successfully"));
+  return res
+    .status(200)
+    .json(new ApiResponse("Reply soft deleted successfully"));
 });
 
 export const voteOnReply = asyncHandler(async (req, res, next) => {
@@ -267,12 +343,10 @@ export const voteOnReply = asyncHandler(async (req, res, next) => {
     vote: 1,
   });
   // Return success response
-  return res
-    .status(200)
-    .json(
-      new ApiResponse("Vote recorded successfully", {
-        userVote: vote,
-        totalUpvotes,
-      })
-    );
+  return res.status(200).json(
+    new ApiResponse("Vote recorded successfully", {
+      userVote: vote,
+      totalUpvotes,
+    })
+  );
 });
