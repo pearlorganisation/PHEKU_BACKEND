@@ -61,6 +61,15 @@ export const getAllReplyForDiscussion = asyncHandler(async (req, res, next) => {
     return next(new ApiError("No replies found for this discussion", 404));
   }
 
+  const newReplies = replies.map((reply) => {
+    if (reply.isDeleted) {
+      reply.text = "[This reply has been deleted]";
+      reply.user = null;
+      return reply;
+    }
+    return reply;
+  });
+  console.log("---new repliesd----", newReplies);
   // Fetch votes for all replies
   const replyIds = replies.map((reply) => reply._id);
 
@@ -74,12 +83,12 @@ export const getAllReplyForDiscussion = asyncHandler(async (req, res, next) => {
       },
     },
   ]);
-  console.log("---- ", votes);
+  console.log("----votes ", votes);
   const voteMap = votes.reduce((acc, vote) => {
     acc[vote._id] = vote;
     return acc;
   }, {});
-  console.log("---- ", voteMap);
+  console.log("----voteMap ", voteMap);
   // Fetch user votes if authenticated
   const userVotes = req.user
     ? await ReplyVote.find({
@@ -87,14 +96,15 @@ export const getAllReplyForDiscussion = asyncHandler(async (req, res, next) => {
         user: req.user._id,
       }).lean()
     : [];
+  console.log("---userVotes- ", userVotes);
   const userVoteMap = userVotes.reduce((acc, vote) => {
     acc[vote.reply] = vote.vote;
     return acc;
   }, {});
-
+  console.log("---userVoteMap- ", userVoteMap);
   // Build the parent-children hierarchy
   const replyMap = {};
-  replies.forEach((reply) => {
+  newReplies.forEach((reply) => {
     reply.children = [];
     const replyVotes = voteMap[reply._id] || {
       totalUpvotes: 0,
@@ -102,12 +112,12 @@ export const getAllReplyForDiscussion = asyncHandler(async (req, res, next) => {
     };
     reply.totalUpvotes = replyVotes.totalUpvotes;
     // reply.totalDownvotes = replyVotes.totalDownvotes;
-    reply.userVote = userVoteMap[reply._id] || 0;
+    reply.userVote = userVoteMap[reply._id] || 0; //Accessing the user vote from the userVoteMap {"874326847": 1}
     replyMap[reply._id] = reply; // Map each reply by its ID
   });
-
+  console.log("replyMap", replyMap);
   const result = [];
-  replies.forEach((reply) => {
+  newReplies.forEach((reply) => {
     if (reply.parent) {
       // Add reply to the parent's children array if parent exists
       if (replyMap[reply.parent]) {
@@ -234,26 +244,6 @@ export const updateReplyById = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse("Reply updated successfully", updatedReply));
 });
 
-// export const deleteReplyById = asyncHandler(async (req, res, next) => {
-//   const { replyId } = req.params;
-
-//   // Attempt to delete the reply with a filter
-//   const result = await Reply.deleteOne({ _id: replyId, user: req.user.id }); // { acknowledged: true, deletedCount: 1 }
-//   console.log(result);
-
-//   if (!result.deletedCount) {
-//     //deletedCount will be 0 if no doc deleted
-//     return next(
-//       new ApiError(
-//         "Reply not found or you are not authorized to delete it",
-//         404
-//       )
-//     );
-//   }
-
-//   // Return success response
-//   return res.status(200).json(new ApiResponse("Reply deleted successfully"));
-// });
 export const deleteReplyById = asyncHandler(async (req, res, next) => {
   const { replyId } = req.params;
 
