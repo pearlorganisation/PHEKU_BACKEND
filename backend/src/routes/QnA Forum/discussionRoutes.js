@@ -11,9 +11,7 @@ import {
 } from "../../middlewares/authMiddleware.js";
 import {
   addReply,
-  deleteReplyById,
   getAllReplyForDiscussion,
-  updateReplyById,
 } from "../../controllers/QnA Forum/replyController.js";
 
 const router = express.Router();

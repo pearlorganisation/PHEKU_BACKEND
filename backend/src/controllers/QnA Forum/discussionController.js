@@ -1,10 +1,9 @@
-import mongoose from "mongoose";
 import Discussion from "../../models/QnA Forum/discussion.js";
-import Vote from "../../models/QnA Forum/vote.js";
 import ApiError from "../../utils/ApiError.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import Reply from "../../models/QnA Forum/reply.js";
+import DiscussionVote from "../../models/QnA Forum/discussionVote.js";
 
 export const createDiscussion = asyncHandler(async (req, res, next) => {
   const { title, content, category, tags } = req.body; // take user from token
@@ -51,7 +50,7 @@ export const voteDiscussion = asyncHandler(async (req, res, next) => {
   }
 
   // Check if the user has already voted using the Vote model
-  const existingVote = await Vote.findOne({ user, discussion: id });
+  const existingVote = await DiscussionVote.findOne({ user, discussion: id });
 
   if (existingVote) {
     if (vote === 0) {
@@ -83,11 +82,29 @@ export const voteDiscussion = asyncHandler(async (req, res, next) => {
 
 // Get all discussion with total upvotes nad total comments | 🔴 pagination is left
 export const getAllDiscussions = asyncHandler(async (req, res, next) => {
+  const { categories, tags } = req.query;
+  // Build the filter object dynamically based on the query params
+  let filter = {};
+
+  // If category is provided, add it to the filter
+  if (categories) {
+    const categoryArr = categories.split(",");
+    filter.category = { $in: categoryArr }; // Filter by category
+  }
+
+  // If tags are provided, add them to the filter (supporting multiple tags)
+  if (tags) {
+    const tagsArray = tags.split(","); // Tags should be passed as a comma-separated string
+    filter.tags = { $in: tagsArray }; // Match any discussion with tags in the tagsArray
+  }
   // Fetch all discussions
-  const discussions = await Discussion.find({});
+  const discussions = await Discussion.find(filter).populate([
+    { path: "category" },
+    { path: "tags" },
+  ]);
 
   // Fetch total upvotes for each discussion
-  const upvotes = await Vote.aggregate([
+  const upvotes = await DiscussionVote.aggregate([
     {
       $match: {
         // Match votes related to the specific discussion (assuming `discussion` is the discussion ID)
@@ -116,7 +133,7 @@ export const getAllDiscussions = asyncHandler(async (req, res, next) => {
       },
     },
   ]);
-  console.log(reply);
+
   let userVotes = [];
   if (req.user) {
     userVotes = await Vote.find({
@@ -165,7 +182,7 @@ export const getDiscussionById = asyncHandler(async (req, res, next) => {
   }
 
   // Fetch total upvotes for the discussion
-  const upvoteData = await Vote.aggregate([
+  const upvoteData = await DiscussionVote.aggregate([
     {
       $match: {
         discussion: discussion._id, // Match the specific discussion ID
@@ -198,7 +215,7 @@ export const getDiscussionById = asyncHandler(async (req, res, next) => {
   // Fetch the user's vote on the discussion, if the user is authenticated
   let userVote = null;
   if (req.user) {
-    const vote = await Vote.findOne({
+    const vote = await DiscussionVote.findOne({
       user: req.user._id,
       discussion: discussion._id,
     });

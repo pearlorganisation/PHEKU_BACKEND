@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const voteSchema = new mongoose.Schema(
+const discussionVoteSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -21,6 +21,6 @@ const voteSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Vote = mongoose.model("Vote", voteSchema);
+const DiscussionVote = mongoose.model("DiscussionVote", discussionVoteSchema);
 
-export default Vote;
+export default DiscussionVote;
