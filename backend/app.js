@@ -63,9 +63,9 @@ app.use("/api/v1/blogs", blogRouter);
 app.use("/api/v1/specializations", specializationRouter);
 app.use("/api/v1/course-levels", courseLevelRouter);
 app.use("/api/v1/roles", roleRouter);
-app.use("/api/v1/discussions", discussionRouter);
 app.use("/api/v1/discussions/categories", discussionCategoryRouter);
 app.use("/api/v1/discussions/tags", discussionTagRouter);
+app.use("/api/v1/discussions", discussionRouter);
 app.use("/api/v1/replies", replyRouter);
 
 app.use(errorHandler);

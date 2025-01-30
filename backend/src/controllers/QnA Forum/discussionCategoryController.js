@@ -25,9 +25,43 @@ export const createDiscussionCategory = asyncHandler(async (req, res, next) => {
 });
 
 // Get all Discussion Categories
+// export const getAllDiscussionCategories = asyncHandler(
+//   async (req, res, next) => {
+//     const discussionCategories = await DiscussionCategory.find(); // Retrieve all categories
+
+//     if (!discussionCategories || discussionCategories.length === 0) {
+//       return next(new ApiError("No Discussion Categories found", 404));
+//     }
+
+//     return res
+//       .status(200)
+//       .json(
+//         new ApiResponse(
+//           "Discussion Categories retrieved successfully",
+//           discussionCategories
+//         )
+//       );
+//   }
+// );
 export const getAllDiscussionCategories = asyncHandler(
   async (req, res, next) => {
-    const discussionCategories = await DiscussionCategory.find(); // Retrieve all categories
+    const discussionCategories = await DiscussionCategory.aggregate([
+      {
+        $lookup: {
+          from: "discussions", // The name of the discussions collection
+          localField: "_id",
+          foreignField: "category",
+          as: "discussions",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          count: { $size: "$discussions" }, // Count discussions in each category
+        },
+      },
+    ]);
 
     if (!discussionCategories || discussionCategories.length === 0) {
       return next(new ApiError("No Discussion Categories found", 404));
@@ -43,6 +77,7 @@ export const getAllDiscussionCategories = asyncHandler(
       );
   }
 );
+
 // Get a single Discussion Category by ID
 export const getDiscussionCategoryById = asyncHandler(
   async (req, res, next) => {
