@@ -22,23 +22,6 @@ export const createDiscussionTag = asyncHandler(async (req, res, next) => {
     );
 });
 
-// Get all Discussion Tags
-// export const getAllDiscussionTags = asyncHandler(async (req, res, next) => {
-//   const discussionTags = await DiscussionTag.find().populate("category");
-
-//   if (!discussionTags || discussionTags.length === 0) {
-//     return next(new ApiError("No Discussion Tags found", 404));
-//   }
-
-//   return res
-//     .status(200)
-//     .json(
-//       new ApiResponse(
-//         "Fetched all Discussion Tags successfully",
-//         discussionTags
-//       )
-//     );
-// });
 export const getAllDiscussionTags = asyncHandler(async (req, res, next) => {
   const { categoryId } = req.query; // Get categoryId from query parameters
   // console.log(categoryId);
@@ -55,7 +38,7 @@ export const getAllDiscussionTags = asyncHandler(async (req, res, next) => {
     {
       $unwind: "$categoryDetails", // Unwind categoryDetails into a single object
     },
-    // Filter by category if categoryId is provided
+    //Filter by category if categoryId is provided
     ...(categoryId
       ? [
           {
@@ -65,22 +48,23 @@ export const getAllDiscussionTags = asyncHandler(async (req, res, next) => {
           },
         ]
       : []),
-    // {
-    //   $lookup: {
-    //     from: "discussions", // Collection name for discussions
-    //     localField: "_id",
-    //     foreignField: "tags",
-    //     as: "discussions",
-    //   },
-    // },
-    // {
-    //   $project: {
-    //     _id: 1,
-    //     name: 1,
-    //     category: "$categoryDetails.name",
-    //     count: { $size: "$discussions" }, // Count of discussions using this tag
-    //   },
-    // },
+    {
+      $lookup: {
+        from: "discussions", // Collection name for discussions
+        localField: "_id",
+        foreignField: "tags",
+        as: "discussions",
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        category: "$categoryDetails.name",
+        categoryId: "$categoryDetails._id",
+        count: { $size: "$discussions" }, // Count of discussions using this tag
+      },
+    },
   ];
 
   // Execute the aggregation pipeline

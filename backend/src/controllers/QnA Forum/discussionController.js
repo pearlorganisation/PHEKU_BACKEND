@@ -4,6 +4,7 @@ import { ApiResponse } from "../../utils/ApiResponse.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import Reply from "../../models/QnA Forum/reply.js";
 import DiscussionVote from "../../models/QnA Forum/discussionVote.js";
+import { paginate } from "../../utils/pagination.js";
 
 export const createDiscussion = asyncHandler(async (req, res, next) => {
   const { title, content, category, tags } = req.body; // take user from token
@@ -64,11 +65,14 @@ export const voteDiscussion = asyncHandler(async (req, res, next) => {
     }
   } else {
     // Add new vote
-    await Vote.create({ user, discussion: id, vote });
+    await DiscussionVote.create({ user, discussion: id, vote });
   }
 
   // Calculate only upvotes
-  const totalUpvotes = await Vote.countDocuments({ discussion: id, vote: 1 });
+  const totalUpvotes = await DiscussionVote.countDocuments({
+    discussion: id,
+    vote: 1,
+  });
 
   // userVote: for UI to update the vote button instantly when votes discussion api call
   // upvotes: for UI to update the upvote count
@@ -80,10 +84,12 @@ export const voteDiscussion = asyncHandler(async (req, res, next) => {
   );
 });
 
-// Get all discussion with total upvotes nad total comments | 🔴 pagination is left
+// Get all discussion with total upvotes nad total comments
 export const getAllDiscussions = asyncHandler(async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
   const { categories, tags } = req.query;
-  // Build the filter object dynamically based on the query params
+
   let filter = {};
 
   // If category is provided, add it to the filter
@@ -97,11 +103,22 @@ export const getAllDiscussions = asyncHandler(async (req, res, next) => {
     const tagsArray = tags.split(","); // Tags should be passed as a comma-separated string
     filter.tags = { $in: tagsArray }; // Match any discussion with tags in the tagsArray
   }
-  // Fetch all discussions
-  const discussions = await Discussion.find(filter).populate([
-    { path: "category" },
-    { path: "tags" },
-  ]);
+
+  const { data: discussions, pagination } = await paginate(
+    Discussion,
+    page,
+    limit,
+    [{ path: "category" }, { path: "tags" }],
+    filter
+  );
+
+  if (!discussions.length) {
+    return res.status(200).json({
+      message: "No discussions found",
+      data: [],
+      pagination,
+    });
+  }
 
   // Fetch total upvotes for each discussion
   const upvotes = await DiscussionVote.aggregate([
@@ -136,7 +153,7 @@ export const getAllDiscussions = asyncHandler(async (req, res, next) => {
 
   let userVotes = [];
   if (req.user) {
-    userVotes = await Vote.find({
+    userVotes = await DiscussionVote.find({
       user: req.user._id,
       discussion: { $in: discussions.map((d) => d._id) },
     });
@@ -164,6 +181,7 @@ export const getAllDiscussions = asyncHandler(async (req, res, next) => {
   // Send response with discussions, total upvotes, and total comments
   return res.status(200).json({
     message: "Discussions fetched successfully",
+    pagination,
     data: discussionsWithDetails,
   });
 });
