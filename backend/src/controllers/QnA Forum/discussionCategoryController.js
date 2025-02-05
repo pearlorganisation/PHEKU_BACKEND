@@ -26,36 +26,89 @@ export const createDiscussionCategory = asyncHandler(async (req, res, next) => {
 
 export const getAllDiscussionCategories = asyncHandler(
   async (req, res, next) => {
-    const discussionCategories = await DiscussionCategory.aggregate([
-      {
-        $lookup: {
-          from: "discussions", // The name of the discussions collection
-          localField: "_id",
-          foreignField: "category",
-          as: "discussions",
-        },
-      },
-      {
-        $project: {
-          _id: 1,
-          name: 1,
-          count: { $size: "$discussions" }, // Count discussions in each category
-        },
-      },
-    ]);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
 
-    if (!discussionCategories || discussionCategories.length === 0) {
-      return next(new ApiError("No Discussion Categories found", 404));
+    let discussionCategories;
+
+    if (req.query.pagination) {
+      // Apply pagination for admin panel
+      discussionCategories = await DiscussionCategory.aggregate([
+        {
+          $lookup: {
+            from: "discussions",
+            localField: "_id",
+            foreignField: "category",
+            as: "discussions",
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            count: { $size: "$discussions" },
+          },
+        },
+        {
+          $facet: {
+            metadata: [{ $count: "total" }],
+            data: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+          },
+        },
+      ]);
+
+      // Extract metadata and paginated data
+      const totalDocuments = discussionCategories[0].metadata[0]?.total || 0;
+      const data = discussionCategories[0].data || [];
+
+      const totalPages = Math.ceil(totalDocuments / limit);
+      const pagination = {
+        total: totalDocuments,
+        current_page: page,
+        limit,
+        next: page < totalPages ? page + 1 : null,
+        prev: page > 1 ? page - 1 : null,
+        pages: Array.from({ length: totalPages }, (_, i) => i + 1),
+      };
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            "Discussion Categories retrieved successfully",
+            data,
+            pagination
+          )
+        );
+    } else {
+      // Return all data without pagination for website users
+      discussionCategories = await DiscussionCategory.aggregate([
+        {
+          $lookup: {
+            from: "discussions",
+            localField: "_id",
+            foreignField: "category",
+            as: "discussions",
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            count: { $size: "$discussions" },
+          },
+        },
+      ]);
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            "Discussion Categories retrieved successfully",
+            discussionCategories
+          )
+        );
     }
-
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(
-          "Discussion Categories retrieved successfully",
-          discussionCategories
-        )
-      );
   }
 );
 
