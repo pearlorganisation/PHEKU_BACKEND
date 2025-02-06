@@ -27,6 +27,4 @@ router
   .post(authenticateToken, addReply)
   .get(optionalAuthenticateToken, getAllReplyForDiscussion);
 
-//Vote on reply
-
 export default router;

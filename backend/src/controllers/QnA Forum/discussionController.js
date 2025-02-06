@@ -136,6 +136,8 @@ export const getAllDiscussions = asyncHandler(async (req, res, next) => {
       },
     },
   ]);
+  // console.log("UP_Votes", upvotes);
+
   // Fetch total comments for each discussion
   const reply = await Reply.aggregate([
     {
@@ -150,6 +152,7 @@ export const getAllDiscussions = asyncHandler(async (req, res, next) => {
       },
     },
   ]);
+  // console.log("Total reply", reply);
 
   let userVotes = [];
   if (req.user) {
@@ -158,18 +161,22 @@ export const getAllDiscussions = asyncHandler(async (req, res, next) => {
       discussion: { $in: discussions.map((d) => d._id) },
     });
   }
-
+  // console.log("User votes", userVotes);
+  // console.log("disc ", discussions);
   // Merge total upvotes and total comments with discussions
   const discussionsWithDetails = discussions.map((discussion) => {
     const upvoteData = upvotes.find(
       (upvote) => upvote._id.toString() === discussion._id.toString()
     );
+    // console.log("upd ", upvoteData);
     const replyData = reply.find(
       (Reply) => Reply._id.toString() === discussion._id.toString()
     );
+    // console.log(" rd ", replyData);
     const userVote = userVotes.find(
       (vote) => vote.discussion.toString() === discussion._id.toString()
     );
+    // console.log("user vote ", userVote);
     return {
       ...discussion.toObject(),
       totalUpvotes: upvoteData ? upvoteData.totalUpvotes : 0,

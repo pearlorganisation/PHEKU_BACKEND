@@ -27,13 +27,17 @@ export const createDiscussionCategory = asyncHandler(async (req, res, next) => {
 export const getAllDiscussionCategories = asyncHandler(
   async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 5;
+    const limit = parseInt(req.query.limit) || 10;
+    const { search } = req.query;
 
     let discussionCategories;
 
     if (req.query.pagination) {
       // Apply pagination for admin panel
       discussionCategories = await DiscussionCategory.aggregate([
+        ...(search
+          ? [{ $match: { name: { $regex: search, $options: "i" } } }]
+          : []),
         {
           $lookup: {
             from: "discussions",
@@ -83,6 +87,9 @@ export const getAllDiscussionCategories = asyncHandler(
     } else {
       // Return all data without pagination for website users
       discussionCategories = await DiscussionCategory.aggregate([
+        ...(search
+          ? [{ $match: { name: { $regex: search, $options: "i" } } }]
+          : []),
         {
           $lookup: {
             from: "discussions",
