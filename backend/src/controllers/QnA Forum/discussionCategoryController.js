@@ -33,6 +33,7 @@ export const getAllDiscussionCategories = asyncHandler(
     let discussionCategories;
 
     if (req.query.pagination) {
+      // 🔴 make helper for pipeline
       // Apply pagination for admin panel
       discussionCategories = await DiscussionCategory.aggregate([
         ...(search
