@@ -3,7 +3,9 @@ import {
   createUserByAdmin,
   login,
   logout,
+  setPassword,
   signup,
+  verifyInvite,
 } from "../controllers/authController.js";
 import { authenticateToken } from "../middlewares/authMiddleware.js";
 
@@ -13,5 +15,7 @@ router.route("/signup").post(signup);
 router.route("/login").post(login);
 router.route("/logout").post(authenticateToken, logout);
 router.route("/invite").post(createUserByAdmin); // Not done yet- Work in progress
+router.route("/verify-invite/:token").get(verifyInvite);
+router.route("/set-password").post(setPassword);
 
 export default router;

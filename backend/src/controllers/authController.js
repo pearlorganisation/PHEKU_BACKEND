@@ -5,6 +5,9 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { signUpValidation, updateValidation } from "../utils/Validation.js";
 import AdministrativeUser from "../models/AdministrativeUser.js";
+import { sendInvitationMail } from "../utils/Mail/emailTemplate.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
 export const signup = asyncHandler(async (req, res, next) => {
   const { fullName, email, password, mobileNumber, role } = req.body;
@@ -117,75 +120,9 @@ export const logout = asyncHandler(async (req, res, next) => {
     .json(new ApiResponse("Logout successfully"));
 });
 
-// Not done yet
-// export const createUserByAdmin = asyncHandler(async (req, res, next) => {
-//   const {
-//     email,
-//     role,
-//     isInvited, // Admin will provide the role
-//   } = req.body;
-//   console.log(req.body);
-//   // Check if the user already exists
-//   const existingUser = await User.findOne({
-//     email,
-//   });
-
-//   if (existingUser) {
-//     return next(new ApiError("User already exists", 400));
-//   }
-
-//   // if (isInvited) {
-//   //   const token = jwt.sign(
-//   //     { email, role },
-//   //     process.env.JWT_SECRET_KEY, // Secret key
-//   //     { expiresIn: "7d" } // Token valid for 7 days
-//   //   );
-
-//   //   // Create the invitation link
-//   //   const inviteLink = `${process.env.FRONTEND_URL}/signup?token=${token}`;
-//   //   const transporter = createTransport({
-//   //     host: "smtp.gmail.com",
-//   //     port: 465,
-//   //     service: "gmail",
-//   //     auth: {
-//   //       user: process.env.NODEMAILER_EMAIL_USER,
-//   //       pass: process.env.NODEMAILER_EMAIL_PASS,
-//   //     },
-//   //   });
-
-//   //   let mailOptions = {
-//   //     from: process.env.NODEMAILER_MAIL,
-//   //     to: email,
-//   //     subject: "You’re Invited!",
-//   //     html: `
-//   //     <p>You have been invited to join our platform as a <b>${role}</b>.</p>
-//   //     <p>Click <a href="${inviteLink}">here</a> to complete your registration.</p>
-//   //   `,
-//   //   };
-//   //   transporter.sendMail(mailOptions, (error, info) => {
-//   //     if (error) {
-//   //       return reject(error);
-//   //     } else {
-//   //       return resolve("Mail sent Successfully");
-//   //     }
-//   //   });
-//   //   // return new Promise((resolve, reject) => {
-
-//   //   // });
-//   // }
-//   // Create a new user with minimal details
-//   const newUser = await AdministrativeUser.create({
-//     email,
-//     role: "ADMIN", // Assign the role as provided by the admin
-//     isInvited: true, // Mark as invited
-//     status: "PENDING", // Set status to PENDING until registration is completed
-//   });
-//   res.status(201).json(newUser);
-// });
-
 export const createUserByAdmin = asyncHandler(async (req, res, next) => {
   const { email, role, isInvited } = req.body;
-  console.log(AVAILABLE_USER_ROLES);
+
   if (!AVAILABLE_USER_ROLES.includes(role)) {
     return res.status(400).json({
       success: false,
@@ -194,12 +131,53 @@ export const createUserByAdmin = asyncHandler(async (req, res, next) => {
       )}`,
     });
   }
-
   const user = await AdministrativeUser.create({
     email,
     role, // Use the role from body
     isInvited,
+    status: "PENDING",
   });
-  console.log(user);
-  res.status(201).json(user);
+
+  const inviteToken = jwt.sign({ email, role }, process.env.JWT_SECRET_KEY, {
+    expiresIn: "2d",
+  });
+
+  const inviteLink = `${process.env.CLIENT_URL}/invite/${inviteToken}`;
+  const data = await sendInvitationMail(email, { inviteLink });
+  if (!data) {
+    return next(new ApiError("Unable to send the invitation mail", 400));
+  }
+  res.status(201).json({ user, inviteToken });
+});
+
+export const verifyInvite = asyncHandler(async (req, res, next) => {
+  const { token } = req.params;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    const user = await User.findOne({
+      email: decoded.email,
+      role: decoded.role,
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ email: user.email });
+  } catch (error) {
+    res.status(400).json({ message: "Invalid token" });
+  }
+});
+
+export const setPassword = asyncHandler(async (req, res, next) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(400).json({ message: "User not found" });
+  }
+  user.password = password;
+  user.status = "ACTIVE";
+  await user.save();
+  res.status(200).json({ message: "Password set successfully" });
 });

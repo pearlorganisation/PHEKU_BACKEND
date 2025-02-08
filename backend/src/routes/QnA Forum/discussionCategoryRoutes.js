@@ -13,7 +13,7 @@ const router = express.Router();
 router
   .route("/")
   .post(createDiscussionCategory) // Create a discussion category
-  .get(getAllDiscussionCategories); // Get all discussion categories | query: pagination , searching for admin | 
+  .get(getAllDiscussionCategories); // Get all discussion categories | query: pagination, search by name for admin |
 
 router
   .route("/:id")

@@ -7,10 +7,15 @@ import { buildDiscussionTagsPipeline } from "../../helpers/aggregationPipelines.
 
 // Create a new Discussion Tag
 export const createDiscussionTag = asyncHandler(async (req, res, next) => {
-  const { name, category } = req.body;
+  const { tags, category } = req.body;
+  if (!Array.isArray(tags) || tags.length === 0) {
+    return next(new ApiError("Tags must be a non-empty array", 400));
+  }
+
+  const tagsWithCategory = tags.map((tag) => ({ ...tag, category }));
 
   // Create tag with name and category
-  const discussionTag = await DiscussionTag.create({ name, category });
+  const discussionTag = await DiscussionTag.insertMany(tagsWithCategory);
 
   if (!discussionTag) {
     return next(new ApiError("Failed to create the Discussion Tag", 400));
@@ -38,7 +43,11 @@ export const getAllDiscussionTags = asyncHandler(async (req, res, next) => {
   );
   const discussionTags = await DiscussionTag.aggregate(pipeline);
   // console.log(JSON.stringify(discussionTags, null, 2));
-  if (!discussionTags || discussionTags.length === 0) {
+  if (
+    (!pagination && (!discussionTags || discussionTags.length === 0)) ||
+    (pagination &&
+      (!discussionTags[0].data || discussionTags[0].data.length === 0))
+  ) {
     return next(new ApiError("No Discussion Tags found", 404));
   }
 

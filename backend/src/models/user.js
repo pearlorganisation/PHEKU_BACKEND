@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema(
   {
     fullName: {
       type: String,
-      required: true,
+      // required: true,
       trim: true,
     },
     email: {
@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema(
     },
     mobileNumber: {
       type: String,
-      required: true,
+      // required: true,
     },
     role: {
       type: String,

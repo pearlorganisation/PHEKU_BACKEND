@@ -1,3 +1,4 @@
+import { buildDiscussionCategoriesPipeline } from "../../helpers/aggregationPipelines.js";
 import DiscussionCategory from "../../models/QnA Forum/discussionCategory.js";
 import ApiError from "../../utils/ApiError.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
@@ -5,20 +6,26 @@ import { asyncHandler } from "../../utils/asyncHandler.js";
 
 // Create a new Discussion Category
 export const createDiscussionCategory = asyncHandler(async (req, res, next) => {
-  const { name } = req.body;
+  const { categories } = req.body;
+
+  if (!Array.isArray(categories) || categories.length === 0) {
+    return next(new ApiError("Categories must be a non-empty array", 400));
+  }
 
   // Create category with the name
-  const discussionCategory = await DiscussionCategory.create({ name });
+  const discussionCategory = await DiscussionCategory.insertMany(categories);
 
   if (!discussionCategory) {
-    return next(new ApiError("Failed to create the Discussion Category", 400));
+    return next(
+      new ApiError("Failed to create the Discussion Categories", 400)
+    );
   }
 
   return res
-    .status(200)
+    .status(201)
     .json(
       new ApiResponse(
-        "Created the Discussion Category successfully",
+        "Created the Discussion Categories successfully",
         discussionCategory
       )
     );
@@ -28,46 +35,32 @@ export const getAllDiscussionCategories = asyncHandler(
   async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const { search } = req.query;
+    const { search, pagination } = req.query;
 
-    let discussionCategories;
+    const pipeline = buildDiscussionCategoriesPipeline(
+      search,
+      page,
+      limit,
+      pagination
+    );
+    const discussionCategories = await DiscussionCategory.aggregate(pipeline);
 
-    if (req.query.pagination) {
-      // 🔴 make helper for pipeline
-      // Apply pagination for admin panel
-      discussionCategories = await DiscussionCategory.aggregate([
-        ...(search
-          ? [{ $match: { name: { $regex: search, $options: "i" } } }]
-          : []),
-        {
-          $lookup: {
-            from: "discussions",
-            localField: "_id",
-            foreignField: "category",
-            as: "discussions",
-          },
-        },
-        {
-          $project: {
-            _id: 1,
-            name: 1,
-            count: { $size: "$discussions" },
-          },
-        },
-        {
-          $facet: {
-            metadata: [{ $count: "total" }],
-            data: [{ $skip: (page - 1) * limit }, { $limit: limit }],
-          },
-        },
-      ]);
+    if (
+      (pagination &&
+        (!discussionCategories[0].data ||
+          discussionCategories[0].data.length === 0)) ||
+      (!pagination &&
+        (!discussionCategories || discussionCategories.length === 0))
+    ) {
+      return next(new ApiError("No Discussion Categories found", 404));
+    }
 
-      // Extract metadata and paginated data
+    if (pagination) {
       const totalDocuments = discussionCategories[0].metadata[0]?.total || 0;
       const data = discussionCategories[0].data || [];
 
       const totalPages = Math.ceil(totalDocuments / limit);
-      const pagination = {
+      const paginationInfo = {
         total: totalDocuments,
         current_page: page,
         limit,
@@ -82,41 +75,18 @@ export const getAllDiscussionCategories = asyncHandler(
           new ApiResponse(
             "Discussion Categories retrieved successfully",
             data,
-            pagination
-          )
-        );
-    } else {
-      // Return all data without pagination for website users
-      discussionCategories = await DiscussionCategory.aggregate([
-        ...(search
-          ? [{ $match: { name: { $regex: search, $options: "i" } } }]
-          : []),
-        {
-          $lookup: {
-            from: "discussions",
-            localField: "_id",
-            foreignField: "category",
-            as: "discussions",
-          },
-        },
-        {
-          $project: {
-            _id: 1,
-            name: 1,
-            count: { $size: "$discussions" },
-          },
-        },
-      ]);
-
-      return res
-        .status(200)
-        .json(
-          new ApiResponse(
-            "Discussion Categories retrieved successfully",
-            discussionCategories
+            paginationInfo
           )
         );
     }
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          "Discussion Categories retrieved successfully",
+          discussionCategories
+        )
+      );
   }
 );
 

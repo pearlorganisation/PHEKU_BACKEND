@@ -13,7 +13,7 @@ const router = express.Router();
 router
   .route("/")
   .post(createDiscussionTag) // Create a discussion tag
-  .get(getAllDiscussionTags); // Get all discussion tags | qyery by category
+  .get(getAllDiscussionTags); // Get all discussion tags | qyery: fileter by category, search by tag name and category name, pagination
 
 router
   .route("/:id")

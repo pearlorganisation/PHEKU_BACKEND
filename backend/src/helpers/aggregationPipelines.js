@@ -81,3 +81,52 @@ export const buildDiscussionTagsPipeline = (
     ];
   }
 };
+
+export const buildDiscussionCategoriesPipeline = (
+  search,
+  page,
+  limit,
+  pagination
+) => {
+  const basePipeline = [
+    ...(search
+      ? [{ $match: { name: { $regex: search, $options: "i" } } }]
+      : []),
+    {
+      $lookup: {
+        from: "discussions",
+        localField: "_id",
+        foreignField: "category",
+        as: "discussions",
+      },
+    },
+  ];
+  if (pagination) {
+    return [
+      ...basePipeline,
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+        },
+      },
+      {
+        $facet: {
+          metadata: [{ $count: "total" }],
+          data: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+        },
+      },
+    ];
+  } else {
+    return [
+      ...basePipeline,
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          count: { $size: "$discussions" },
+        },
+      },
+    ];
+  }
+};
