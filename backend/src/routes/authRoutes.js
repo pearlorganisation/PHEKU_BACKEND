@@ -3,6 +3,7 @@ import {
   createUserByAdmin,
   login,
   logout,
+  resendInvite,
   setPassword,
   signup,
   verifyInvite,
@@ -15,7 +16,8 @@ router.route("/signup").post(signup);
 router.route("/login").post(login);
 router.route("/logout").post(authenticateToken, logout);
 router.route("/invite").post(createUserByAdmin); // Not done yet- Work in progress
-router.route("/verify-invite/:token").get(verifyInvite);
+router.route("/verify-invite").get(verifyInvite);
 router.route("/set-password").post(setPassword);
+router.route("/resend-invite/:id").post(resendInvite);
 
 export default router;

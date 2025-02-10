@@ -3,7 +3,7 @@ import User from "../models/user.js";
 import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { signUpValidation, updateValidation } from "../utils/Validation.js";
+import { signUpValidation } from "../utils/Validation.js";
 import AdministrativeUser from "../models/AdministrativeUser.js";
 import { sendInvitationMail } from "../utils/Mail/emailTemplate.js";
 import jwt from "jsonwebtoken";
@@ -121,7 +121,7 @@ export const logout = asyncHandler(async (req, res, next) => {
 });
 
 export const createUserByAdmin = asyncHandler(async (req, res, next) => {
-  const { email, role, isInvited } = req.body;
+  const { fullName, email, role, isInvited } = req.body;
 
   if (!AVAILABLE_USER_ROLES.includes(role)) {
     return res.status(400).json({
@@ -132,6 +132,7 @@ export const createUserByAdmin = asyncHandler(async (req, res, next) => {
     });
   }
   const user = await AdministrativeUser.create({
+    fullName,
     email,
     role, // Use the role from body
     isInvited,
@@ -151,7 +152,7 @@ export const createUserByAdmin = asyncHandler(async (req, res, next) => {
 });
 
 export const verifyInvite = asyncHandler(async (req, res, next) => {
-  const { token } = req.params;
+  const { token } = req.query;
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
@@ -164,20 +165,47 @@ export const verifyInvite = asyncHandler(async (req, res, next) => {
       return res.status(400).json({ message: "User not found" });
     }
 
-    res.status(200).json({ email: user.email });
+    res
+      .status(200)
+      .json({ email: user.email, fullName: user.fullName, role: user.role });
   } catch (error) {
     res.status(400).json({ message: "Invalid token" });
   }
 });
 
 export const setPassword = asyncHandler(async (req, res, next) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
+  const { fullName, password } = req.body;
+  const { token } = req.query;
+  const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+  const user = await User.findOne({ email: decoded.email });
   if (!user) {
     return res.status(400).json({ message: "User not found" });
   }
   user.password = password;
+  user.fullName = fullName;
   user.status = "ACTIVE";
-  await user.save();
+  await user.save(); // Send mail too
   res.status(200).json({ message: "Password set successfully" });
+});
+
+export const resendInvite = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const user = await AdministrativeUser.findById(id);
+  if (!user) {
+    return res.status(400).json({ message: "User not found" });
+  }
+  const inviteToken = jwt.sign(
+    { email, role: user.role },
+    process.env.JWT_SECRET_KEY,
+    {
+      expiresIn: "2d",
+    }
+  );
+  const inviteLink = `${process.env.CLIENT_URL}/invite/${inviteToken}`;
+  const data = await sendInvitationMail(email, { inviteLink });
+  if (!data) {
+    return next(new ApiError("Unable to send the invitation mail", 400));
+  }
+  res.status(200).json({ inviteToken });
 });
