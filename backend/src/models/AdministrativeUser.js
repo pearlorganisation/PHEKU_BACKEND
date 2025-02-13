@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import User from "./user.js";
-import { AVAILABLE_USER_ROLES, USER_ROLES_ENUM } from "../../constants.js";
 
 // Descriminator for Administrative User
 const administrativeUserSchema = new mongoose.Schema({

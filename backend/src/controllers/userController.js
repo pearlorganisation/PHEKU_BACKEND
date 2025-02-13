@@ -7,6 +7,12 @@ import jwt from "jsonwebtoken";
 import ejs from "ejs";
 import { filePath } from "../utils/ejsFilepathHelper.js";
 import { uploadFileToCloudinary } from "../configs/cloudinary.js";
+import {
+  sendInvitationMail,
+  sendPasswordSetupInvitation,
+} from "../utils/Mail/emailTemplate.js";
+import AdministrativeUser from "../models/AdministrativeUser.js";
+import { AVAILABLE_USER_ROLES } from "../../constants.js";
 
 export const getUserDetails = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user?._id).select(
@@ -110,7 +116,7 @@ export const forgotPassword = asyncHandler(async (req, res, next) => {
   const resetToken = jwt.sign({ _id: user._id }, process.env.JWT_SECRET_KEY, {
     expiresIn: "1h",
   });
-  
+
   // Construct reset URL
   const resetLink = `${process.env.FRONTEND_RESET_PASSWORD_PAGE}/${resetToken}`;
 
@@ -157,4 +163,139 @@ export const resetPassword = asyncHandler(async (req, res, next) => {
   res
     .status(200)
     .json(new ApiResponse("Password reset successfull", null, 200));
+});
+
+export const createUserByAdmin = asyncHandler(async (req, res, next) => {
+  const { fullName, email, role, isInvited } = req.body;
+
+  if (!AVAILABLE_USER_ROLES.includes(role)) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid role: ${role}. Must be one of ${AVAILABLE_USER_ROLES.join(
+        ", "
+      )}`,
+    });
+  }
+
+  const user = await AdministrativeUser.create({
+    fullName,
+    email,
+    role, // Use the role from body
+    isInvited,
+    status: "PENDING",
+  });
+
+  const inviteToken = jwt.sign({ email, role }, process.env.JWT_SECRET_KEY, {
+    expiresIn: "2d",
+  });
+
+  const inviteLink = `${process.env.CLIENT_URL}/invite/${inviteToken}`;
+  await sendInvitationMail(email, { inviteLink })
+    .then(() => {
+      return res.status(200).json({
+        success: true,
+        message: "Mail sent successfully.",
+      });
+    })
+    .catch((error) => {
+      res.status(400).json({
+        success: false,
+        message: `Unable to send mail! ${error.message}`,
+      });
+    });
+});
+
+export const verifyInvite = asyncHandler(async (req, res, next) => {
+  const { token } = req.query;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    const user = await User.findOne({
+      email: decoded.email,
+      role: decoded.role,
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    res
+      .status(200)
+      .json({ email: user.email, fullName: user.fullName, role: user.role });
+  } catch (error) {
+    res.status(400).json({ message: "Invalid token" });
+  }
+});
+
+export const setPassword = asyncHandler(async (req, res, next) => {
+  const { fullName, password } = req.body;
+  const { token } = req.query;
+  const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+  const user = await User.findOne({ email: decoded.email });
+  if (!user) {
+    return res.status(400).json({ message: "User not found" });
+  }
+  user.password = password;
+  user.fullName = fullName;
+  user.status = "ACTIVE";
+  await user.save();
+
+  const loginUrl = `${process.env.CLIENT_URL}/`;
+  await sendPasswordSetupInvitation(user.email, { fullName, loginUrl }).then(
+    () => {
+      return res.status(200).json({
+        success: true,
+        message: "Mail sent successfully.",
+      });
+    },
+    (error) => {
+      res.status(400).json({
+        success: false,
+        message: `Unable to send mail! ${error.message}`,
+      });
+    }
+  );
+});
+
+export const resendInvite = asyncHandler(async (req, res, next) => {
+  const { userId } = req.params;
+  const user = await AdministrativeUser.findById(userId);
+  if (!user) {
+    return res.status(400).json({ message: "User not found" });
+  }
+  const inviteToken = jwt.sign(
+    { email: user.email, role: user.role },
+    process.env.JWT_SECRET_KEY,
+    {
+      expiresIn: "2d",
+    }
+  );
+  const inviteLink = `${process.env.CLIENT_URL}/invite/${inviteToken}`;
+  await sendInvitationMail(user.email, { inviteLink })
+    .then(() => {
+      return res.status(200).json({
+        success: true,
+        message: "Mail sent successfully.",
+      });
+    })
+    .catch((error) => {
+      res.status(400).json({
+        success: false,
+        message: `Unable to send mail! ${error.message}`,
+      });
+    });
+});
+
+export const changeRole = asyncHandler(async (req, res, next) => {
+  const { role } = req.body;
+  const { userId } = req.params;
+
+  const user = await User.findById(userId);
+  if (!user) {
+    return res.status(400).json({ message: "User not found" });
+  }
+  user.role = role;
+  await user.save();
+  return res.status(200).json({ message: "Role changed successfully" });
 });
